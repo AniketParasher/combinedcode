@@ -220,8 +220,8 @@ def main():
             st.session_state['download_mapped'] = towrite2
             st.session_state['download_teachers'] = towrite3
     # Always show download buttons
-    if st.session_state['download_data'] is not None:
-        st.download_button(label="Download Student IDs Excel", data=st.session_state['download_data'], file_name="Student_Ids.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    #if st.session_state['download_data'] is not None:
+        #st.download_button(label="Download Student IDs Excel", data=st.session_state['download_data'], file_name="Student_Ids.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     if st.session_state['download_mapped'] is not None:
         st.download_button(label="Download Mapped Student IDs Excel", data=st.session_state['download_mapped'], file_name="Student_Ids_Mapped.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     if st.session_state['download_teachers'] is not None:
