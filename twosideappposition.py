@@ -181,140 +181,157 @@ def main():
         st.session_state['download_mapped'] = None
         st.session_state['download_teachers'] = None
 
-    # Create two columns for side-by-side layout
-    col1, col2 = st.columns(2)
+    uploaded_file = st.sidebar.file_uploader("Upload an Excel file", type=["xlsx"])
 
-    with col1:
-        uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
-        if uploaded_file is not None:
-            st.write("File uploaded successfully!")
-            partner_id = st.number_input("Partner ID", min_value=0, value=0)
-            buffer_percent = st.number_input("Buffer (%)", min_value=0.0, max_value=100.0, value=30.0)
-            grade = st.number_input("Grade", min_value=1, value=1)
-            district_digits = st.number_input("District ID Digits", min_value=1, value=2)
-            block_digits = st.number_input("Block ID Digits", min_value=1, value=2)
-            school_digits = st.number_input("School ID Digits", min_value=1, value=3)
-            student_digits = st.number_input("Student ID Digits", min_value=1, value=4)
-            # Set the title of the app
-            st.title("Parameter Set")
-            # URL of the image in your GitHub repository
-            image_url = "https://raw.githubusercontent.com/pranay-raj-goud/Test2/main/Image.png"
-            # Display the image with a caption
-            st.image(image_url, caption="Select below parameters", use_column_width=True)
-            selected_param = st.selectbox("Select Parameter Set", list(parameter_mapping.keys()))
-            st.write(parameter_descriptions[selected_param])
-            if st.button("Generate IDs"):
-                data_expanded, data_mapped, teacher_codes = process_data(uploaded_file, partner_id, buffer_percent, grade, district_digits, block_digits, school_digits, student_digits, selected_param)
-                # Save the data for download
-                towrite1 = io.BytesIO()
-                towrite2 = io.BytesIO()
-                towrite3 = io.BytesIO()
-                with pd.ExcelWriter(towrite1, engine='xlsxwriter') as writer:
-                    data_expanded.to_excel(writer, index=False)
-                with pd.ExcelWriter(towrite2, engine='xlsxwriter') as writer:
-                    data_mapped.to_excel(writer, index=False)
-                with pd.ExcelWriter(towrite3, engine='xlsxwriter') as writer:
-                    teacher_codes.to_excel(writer, index=False)
-                towrite1.seek(0)
-                towrite2.seek(0)
-                towrite3.seek(0)
-                # Update session state for download links
-                st.session_state['download_data'] = towrite1
-                st.session_state['download_mapped'] = towrite2
-                st.session_state['download_teachers'] = towrite3
+    if uploaded_file is not None:
+        st.write("File uploaded successfully!")
 
-        # Always show download buttons
-        # if st.session_state['download_data'] is not None:
-        #     st.download_button(label="Download Student IDs Excel", data=st.session_state['download_data'], file_name="Student_Ids.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        if st.session_state['download_mapped'] is not None:
-            st.download_button(label="Download Mapped Student IDs Excel", data=st.session_state['download_mapped'], file_name="Student_Ids_Mapped.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        if st.session_state['download_teachers'] is not None:
-            st.download_button(label="Download Teacher Codes Excel", data=st.session_state['download_teachers'], file_name="Teacher_Codes.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        # Move inputs to the sidebar
+        partner_id = st.sidebar.number_input("Partner ID", min_value=0, value=0)
+        buffer_percent = st.sidebar.number_input("Buffer (%)", min_value=0.0, max_value=100.0, value=30.0)
+        grade = st.sidebar.number_input("Grade", min_value=1, value=1)
+        district_digits = st.sidebar.number_input("District ID Digits", min_value=1, value=2)
+        block_digits = st.sidebar.number_input("Block ID Digits", min_value=1, value=2)
+        school_digits = st.sidebar.number_input("School ID Digits", min_value=1, value=3)
+        student_digits = st.sidebar.number_input("Student ID Digits", min_value=1, value=4)
 
-    with col2:
-        # Part 2: Attendance PDF Generation
-        if st.session_state['download_mapped'] is not None:
-            st.title("Attendance List PDF Generator")
+        # Set the title of the app
+        st.title("Parameter Set")
 
-            image_path = "https://raw.githubusercontent.com/AniketParasher/pdfcreator/main/cg.png"
+        # URL of the image in your GitHub repository
+        image_url = "https://raw.githubusercontent.com/pranay-raj-goud/Test2/main/Image.png"
 
-            # Process the `data_mapped` as the Excel file for attendance list generation
-            excel_data = st.session_state['download_mapped'].getvalue()
+        # Display the image with a caption
+        st.image(image_url, caption="Select below parameters", use_column_width=True)
 
-            df1 = pd.read_excel(excel_data)
+        selected_param = st.sidebar.selectbox("Select Parameter Set", list(parameter_mapping.keys()))
+        st.write(parameter_descriptions[selected_param])
 
-            # Define possible variations of 'Student ID' column names
-            student_id_variations = ['STUDENT ID', 'STUDENT_ID', 'ROLL_NUMBER', 'Roll_Number', 'Roll Number']
+        if st.sidebar.button("Generate IDs"):
+            data_expanded, data_mapped, teacher_codes = process_data(
+                uploaded_file, partner_id, buffer_percent, grade,
+                district_digits, block_digits, school_digits,
+                student_digits, selected_param
+            )
 
-            # Identify the actual column name from the variations
-            student_id_column = None
-            for variation in student_id_variations:
-                if variation in df1.columns:
-                    student_id_column = variation
-                    break
+            # Save the data for download
+            towrite1 = io.BytesIO()
+            towrite2 = io.BytesIO()
+            towrite3 = io.BytesIO()
+            with pd.ExcelWriter(towrite1, engine='xlsxwriter') as writer:
+                data_expanded.to_excel(writer, index=False)
+            with pd.ExcelWriter(towrite2, engine='xlsxwriter') as writer:
+                data_mapped.to_excel(writer, index=False)
+            with pd.ExcelWriter(towrite3, engine='xlsxwriter') as writer:
+                teacher_codes.to_excel(writer, index=False)
+            towrite1.seek(0)
+            towrite2.seek(0)
+            towrite3.seek(0)
 
-            if student_id_column is None:
-                raise ValueError("No recognized student ID column found in the data")
+            # Update session state for download links
+            st.session_state['download_data'] = towrite1
+            st.session_state['download_mapped'] = towrite2
+            st.session_state['download_teachers'] = towrite3
 
-            # Standardize column name to 'STUDENT_ID'
-            df = df1.rename(columns={student_id_column: 'STUDENT ID'})
+    # Always show download buttons
+    if st.session_state['download_mapped'] is not None:
+        st.download_button(
+            label="Download Mapped Student IDs Excel",
+            data=st.session_state['download_mapped'],
+            file_name="Student_Ids_Mapped.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    if st.session_state['download_teachers'] is not None:
+        st.download_button(
+            label="Download Teacher Codes Excel",
+            data=st.session_state['download_teachers'],
+            file_name="Teacher_Codes.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
-            # Process data
-            grouping_columns = [col for col in df.columns if col not in ['STUDENT ID', 'Gender'] and df[col].notna().any()]
-            grouped = df.groupby(grouping_columns).agg(student_count=('STUDENT ID', 'nunique')).reset_index()
+    # Part 2: Attendance PDF Generation
+    if st.session_state['download_mapped'] is not None:
+        st.title("Attendance List PDF Generator")
 
-            if 'CLASS' in grouped.columns and grouped['CLASS'].astype(str).str.contains('\D').any():
-                grouped['CLASS'] = grouped['CLASS'].astype(str).str.extract('(\d+)')
+        image_path = "https://raw.githubusercontent.com/AniketParasher/pdfcreator/main/cg.png"
 
-            result = grouped.to_dict(orient='records')
+        # Process the `data_mapped` as the Excel file for attendance list generation
+        excel_data = st.session_state['download_mapped'].getvalue()
 
-            # Number of columns and column names for the table
-            column_names = ['S.NO', 'STUDENT ID', 'PASSCODE', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SUBJECT 1 (PRESENT/ABSENT)', 'SUBJECT 2 (PRESENT/ABSENT)']
-            column_widths = {
-                'S.NO': 8,
-                'STUDENT ID': 18,
-                'PASSCODE': 18,
-                'STUDENT NAME': 61,
-                'GENDER': 15,
-                'TAB ID': 15,
-                'SUBJECT 1 (PRESENT/ABSENT)': 35,
-                'SUBJECT 2 (PRESENT/ABSENT)': 35
-            }
+        df1 = pd.read_excel(excel_data)
 
-            if st.button("Click to Generate PDFs and Zip"):
-                # Create a temporary directory to save PDFs
-                with tempfile.TemporaryDirectory() as tmp_dir:
-                    pdf_paths = []
+        # Define possible variations of 'Student ID' column names
+        student_id_variations = ['STUDENT ID', 'STUDENT_ID', 'ROLL_NUMBER', 'Roll_Number', 'Roll Number']
 
-                    for record in result:
-                        school_name = record.get('School Name', 'default_code')
-                        block_name = record.get('Block Name', 'default_code')
+        # Identify the actual column name from the variations
+        student_id_column = None
+        for variation in student_id_variations:
+            if variation in df1.columns:
+                student_id_column = variation
+                break
 
-                        # Create a PDF for each school
-                        pdf = FPDF(orientation='P', unit='mm', format='A4')
-                        pdf.set_left_margin(10)
-                        pdf.set_right_margin(10)
+        if student_id_column is None:
+            raise ValueError("No recognized student ID column found in the data")
 
-                        create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
+        # Standardize column name to 'STUDENT ID'
+        df = df1.rename(columns={student_id_column: 'STUDENT ID'})
 
-                        # Save the PDF in the temporary directory
-                        pdf_path = os.path.join(tmp_dir, f'{school_name} , {block_name}.pdf')
-                        pdf.output(pdf_path)
-                        pdf_paths.append(pdf_path)
+        # Process data
+        grouping_columns = [col for col in df.columns if col not in ['STUDENT ID', 'Gender'] and df[col].notna().any()]
+        grouped = df.groupby(grouping_columns).agg(student_count=('STUDENT ID', 'nunique')).reset_index()
 
-                    # Create a zip file containing all PDFs
-                    zip_buffer = io.BytesIO()
-                    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-                        for pdf_path in pdf_paths:
-                            zip_file.write(pdf_path, os.path.basename(pdf_path))
+        if 'CLASS' in grouped.columns and grouped['CLASS'].astype(str).str.contains('\D').any():
+            grouped['CLASS'] = grouped['CLASS'].astype(str).str.extract('(\d+)')
 
-                    # Provide download link for the zip file
-                    st.download_button(
-                        label="Click to Download Zip File",
-                        data=zip_buffer.getvalue(),
-                        file_name="attendance_Sheets.zip",
-                        mime="application/zip"
-                    )
+        result = grouped.to_dict(orient='records')
+
+        # Number of columns and column names for the table
+        column_names = ['S.NO', 'STUDENT ID', 'PASSCODE', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SUBJECT 1 (PRESENT/ABSENT)', 'SUBJECT 2 (PRESENT/ABSENT)']
+        column_widths = {
+            'S.NO': 8,
+            'STUDENT ID': 18,
+            'PASSCODE': 18,
+            'STUDENT NAME': 61,
+            'GENDER': 15,
+            'TAB ID': 15,
+            'SUBJECT 1 (PRESENT/ABSENT)': 35,
+            'SUBJECT 2 (PRESENT/ABSENT)': 35
+        }
+
+        if st.button("Click to Generate PDFs and Zip"):
+            # Create a temporary directory to save PDFs
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                pdf_paths = []
+
+                for record in result:
+                    school_name = record.get('School Name', 'default_code')
+                    block_name = record.get('Block Name', 'default_code')
+
+                    # Create a PDF for each school
+                    pdf = FPDF(orientation='P', unit='mm', format='A4')
+                    pdf.set_left_margin(10)
+                    pdf.set_right_margin(10)
+
+                    create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
+
+                    # Save the PDF in the temporary directory
+                    pdf_path = os.path.join(tmp_dir, f'{school_name}_{block_name}.pdf')
+                    pdf.output(pdf_path)
+                    pdf_paths.append(pdf_path)
+
+                # Create a zip file containing all PDFs
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+                    for pdf_path in pdf_paths:
+                        zip_file.write(pdf_path, os.path.basename(pdf_path))
+
+                # Provide download link for the zip file
+                st.download_button(
+                    label="Click to Download Zip File",
+                    data=zip_buffer.getvalue(),
+                    file_name="attendance_Sheets.zip",
+                    mime="application/zip"
+                )
 
 if __name__ == "__main__":
     main()
