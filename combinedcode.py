@@ -134,12 +134,12 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
                 info_labels[label] = value
                 break
 
-    pdf.cell(info_cell_width, 5, f"PROJECT: {info_labels['PROJECT']}", border='LR', ln=1)
-    pdf.cell(info_cell_width, 5, f"DISTRICT: {info_labels['DISTRICT']}                                                                                                                                                                                 DATE OF ASSESSMENT : ____________________", border='LR', ln=1)
-    pdf.cell(info_cell_width, 5, f"BLOCK: {info_labels['BLOCK']}", border='LR', ln=1)
-    pdf.cell(info_cell_width, 5, f"SCHOOL NAME: {info_labels['SCHOOL NAME']}", border='LR', ln=1)
-    pdf.cell(info_cell_width, 5, f"CLASS: {info_labels['CLASS']}", border='LR', ln=1)
-    pdf.cell(info_cell_width, 5, f"SECTION: {info_labels['SECTION']}", border='LR', ln=1)
+    pdf.cell(info_cell_width, 5, f"PROJECT : {info_labels['PROJECT']}", border='LR', ln=1)
+    pdf.cell(info_cell_width, 5, f"DISTRICT : {info_labels['DISTRICT']}                                                                                                                                                                                 DATE OF ASSESSMENT : ____________________", border='LR', ln=1)
+    pdf.cell(info_cell_width, 5, f"BLOCK : {info_labels['BLOCK']}", border='LR', ln=1)
+    pdf.cell(info_cell_width, 5, f"SCHOOL NAME : {info_labels['SCHOOL NAME']}", border='LR', ln=1)
+    pdf.cell(info_cell_width, 5, f"CLASS : {info_labels['CLASS']}", border='LR', ln=1)
+    pdf.cell(info_cell_width, 5, f"SECTION : {info_labels['SECTION']}", border='LR', ln=1)
 
     # Draw a border around the table header
     pdf.set_font('Arial', 'B', 5.5)
