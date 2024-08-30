@@ -319,7 +319,7 @@ def main():
                     create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
 
                     # Save the PDF in the temporary directory
-                    pdf_path = os.path.join(tmp_dir, f'{school_name} , {school_code}.pdf')
+                    pdf_path = os.path.join(tmp_dir, f'{school_name} , {block_name}.pdf')
                     pdf.output(pdf_path)
                     pdf_paths.append(pdf_path)
 
