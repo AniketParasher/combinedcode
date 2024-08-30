@@ -308,7 +308,8 @@ def main():
                 pdf_paths = []
 
                 for record in result:
-                    school_code = record.get('School Code', 'default_code')
+                    school_name = record.get('School Name', 'default_code')
+                    block_name = record.get('Block Name', 'default_code')
 
                     # Create a PDF for each school
                     pdf = FPDF(orientation='P', unit='mm', format='A4')
@@ -318,7 +319,7 @@ def main():
                     create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
 
                     # Save the PDF in the temporary directory
-                    pdf_path = os.path.join(tmp_dir, f'attendance_list_{school_code}.pdf')
+                    pdf_path = os.path.join(tmp_dir, f'{school_name} , {school_code}.pdf')
                     pdf.output(pdf_path)
                     pdf_paths.append(pdf_path)
 
