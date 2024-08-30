@@ -172,50 +172,80 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
         pdf.ln(table_cell_height)
 
 def main():
+
     st.title("Student ID Generator")
+    
     # Initialize session state for buttons
     if 'buttons_initialized' not in st.session_state:
         st.session_state['buttons_initialized'] = True
         st.session_state['download_data'] = None
         st.session_state['download_mapped'] = None
         st.session_state['download_teachers'] = None
+        st.title("Input File Structure")
+        # URL of the image in your GitHub repository
+        image_url = "https://raw.githubusercontent.com/pranay-raj-goud/Test2/main/image%20(19).png"
+        # Display the image with a caption
+        st.image(image_url, caption="Your input file should be in this format", use_column_width=True)
+    # File uploader section
     uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
     if uploaded_file is not None:
         st.write("File uploaded successfully!")
-        partner_id = st.number_input("Partner ID", min_value=0, value=0)
-        buffer_percent = st.number_input("Buffer (%)", min_value=0.0, max_value=100.0, value=30.0)
-        grade = st.number_input("Grade", min_value=1, value=1)
-        district_digits = st.number_input("District ID Digits", min_value=1, value=2)
-        block_digits = st.number_input("Block ID Digits", min_value=1, value=2)
-        school_digits = st.number_input("School ID Digits", min_value=1, value=3)
-        student_digits = st.number_input("Student ID Digits", min_value=1, value=4)
-         # Set the title of the app
-        st.title("Parameter Set")
-       # URL of the image in your GitHub repository
-        image_url = "https://raw.githubusercontent.com/pranay-raj-goud/Test2/main/Image.png"
-       # Display the image with a caption
-        st.image(image_url, caption="Select below parameters", use_column_width=True)
-        selected_param = st.selectbox("Select Parameter Set", list(parameter_mapping.keys()))
-        st.write(parameter_descriptions[selected_param])
-        if st.button("Generate IDs"):
-            data_expanded, data_mapped, teacher_codes = process_data(uploaded_file, partner_id, buffer_percent, grade, district_digits, block_digits, school_digits, student_digits, selected_param)
-            # Save the data for download
-            towrite1 = io.BytesIO()
-            towrite2 = io.BytesIO()
-            towrite3 = io.BytesIO()
-            with pd.ExcelWriter(towrite1, engine='xlsxwriter') as writer:
-                data_expanded.to_excel(writer, index=False)
-            with pd.ExcelWriter(towrite2, engine='xlsxwriter') as writer:
-                data_mapped.to_excel(writer, index=False)
-            with pd.ExcelWriter(towrite3, engine='xlsxwriter') as writer:
-                teacher_codes.to_excel(writer, index=False)
-            towrite1.seek(0)
-            towrite2.seek(0)
-            towrite3.seek(0)
-            # Update session state for download links
-            st.session_state['download_data'] = towrite1
-            st.session_state['download_mapped'] = towrite2
-            st.session_state['download_teachers'] = towrite3
+        # Checkboxes to select mode
+        run_default = st.checkbox("Rock the Default Settings")
+        customize_id = st.checkbox("Play by Your Rules")
+        # Ensure only one checkbox is selected
+        if run_default and customize_id:
+            st.warning("Please select only one option.")
+            return
+        if run_default:
+            # Default parameters
+            partner_id = 1
+            grade = st.number_input("Grade", min_value=1, value=1)
+            buffer_percent = 0.0
+            district_digits = 2
+            block_digits = 2
+            school_digits = 3
+            student_digits = 3
+            selected_param = 'A4'  # Default to A4
+            st.write("Default parameters are set.")
+        if customize_id:
+            # Custom parameters
+            partner_id = st.number_input("Partner ID", min_value=0, value=1)
+            grade = st.number_input("Grade", min_value=1, value=1)
+            buffer_percent = st.number_input("Buffer (%)", min_value=0.0, max_value=100.0, value=30.0)
+            district_digits = st.number_input("District ID Digits", min_value=1, value=2)
+            block_digits = st.number_input("Block ID Digits", min_value=1, value=2)
+            school_digits = st.number_input("School ID Digits", min_value=1, value=3)
+            student_digits = st.number_input("Student ID Digits", min_value=1, value=4)
+            # Display parameter descriptions directly in selectbox
+            parameter_options = list(parameter_descriptions.values())
+            selected_description = st.selectbox("Select Parameter Set", parameter_options)
+            # Get the corresponding parameter key
+            selected_param = list(parameter_descriptions.keys())[parameter_options.index(selected_description)]
+            st.write(parameter_descriptions[selected_param])
+            # Add notification messages
+            st.warning("Avoid Digit Overload in Your Enrollments:")
+            #st.warning("Ensure that the number of digits for District ID, Block ID, School ID, and Student ID is appropriate to avoid overload.")
+        if run_default or customize_id:
+            if st.button("Generate IDs"):
+                data_expanded, data_mapped, teacher_codes = process_data(uploaded_file, partner_id, buffer_percent, grade, district_digits, block_digits, school_digits, student_digits, selected_param)
+                # Save the data for download
+                towrite1 = io.BytesIO()
+                towrite2 = io.BytesIO()
+                towrite3 = io.BytesIO()
+                with pd.ExcelWriter(towrite1, engine='xlsxwriter') as writer:
+                    data_expanded.to_excel(writer, index=False)
+                with pd.ExcelWriter(towrite2, engine='xlsxwriter') as writer:
+                    data_mapped.to_excel(writer, index=False)
+                with pd.ExcelWriter(towrite3, engine='xlsxwriter') as writer:
+                    teacher_codes.to_excel(writer, index=False)
+                towrite1.seek(0)
+                towrite2.seek(0)
+                towrite3.seek(0)
+                # Update session state for download links
+                st.session_state['download_data'] = towrite1
+                st.session_state['download_mapped'] = towrite2
+                st.session_state['download_teachers'] = towrite3
     # Always show download buttons
     #if st.session_state['download_data'] is not None:
         #st.download_button(label="Download Student IDs Excel", data=st.session_state['download_data'], file_name="Student_Ids.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -223,7 +253,6 @@ def main():
         st.download_button(label="Download Mapped Student IDs Excel", data=st.session_state['download_mapped'], file_name="Student_Ids_Mapped.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     if st.session_state['download_teachers'] is not None:
         st.download_button(label="Download Teacher Codes Excel", data=st.session_state['download_teachers'], file_name="Teacher_Codes.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
         # Part 2: Attendance PDF Generation
     if st.session_state['download_mapped'] is not None:
         st.title("Attendance List PDF Generator")
@@ -279,8 +308,7 @@ def main():
                 pdf_paths = []
 
                 for record in result:
-                    school_name = record.get('School Name', 'default_code')
-                    block_name = record.get('Block Name', 'default_code')
+                    school_code = record.get('School Code', 'default_code')
 
                     # Create a PDF for each school
                     pdf = FPDF(orientation='P', unit='mm', format='A4')
@@ -290,7 +318,7 @@ def main():
                     create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
 
                     # Save the PDF in the temporary directory
-                    pdf_path = os.path.join(tmp_dir, f'{school_name} , {block_name}.pdf')
+                    pdf_path = os.path.join(tmp_dir, f'attendance_list_{school_code}.pdf')
                     pdf.output(pdf_path)
                     pdf_paths.append(pdf_path)
 
