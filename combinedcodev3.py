@@ -197,7 +197,9 @@ def main():
         st.table(df)
         # Display a note emphasizing that School_ID should be unique
         st.markdown("**School_ID column should be unique**")
-        
+
+    # File uploader section
+    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
     if uploaded_file is not None:
         st.write("File uploaded successfully!")
         # Checkboxes to select mode
