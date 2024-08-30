@@ -172,12 +172,7 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
 
         pdf.ln(table_cell_height)
 
-def reset_app():
-    os.execv(sys.executable, ['python'] + sys.argv)
-
 def main():
-
-    st.button("Restart App", on_click=reset_app)
 
     st.title("Student ID Generator")
     
@@ -188,12 +183,21 @@ def main():
         st.session_state['download_mapped'] = None
         st.session_state['download_teachers'] = None
         st.title("Input File Structure")
-        # URL of the image in your GitHub repository
-        image_url = "https://raw.githubusercontent.com/pranay-raj-goud/Test2/main/image%20(19).png"
-        # Display the image with a caption
-        st.image(image_url, caption="Your input file should be in this format", use_column_width=True)
-    # File uploader section
-    uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
+                # Data for the example table
+        data = {
+            'District': ['District A', 'District B', 'District C'],
+            'Block': ['Block A', 'Block B', 'Block C'],
+            'School_ID': [1001, 1002, 1003],
+            'School': ['School A', 'School B', 'School C'],
+            'Total_Students': [300, 450, 200]
+        }
+        # Create a DataFrame
+        df = pd.DataFrame(data)
+        # Display the table
+        st.table(df)
+        # Display a note emphasizing that School_ID should be unique
+        st.markdown("**School_ID column should be unique**")
+        
     if uploaded_file is not None:
         st.write("File uploaded successfully!")
         # Checkboxes to select mode
