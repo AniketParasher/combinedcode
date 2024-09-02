@@ -100,7 +100,7 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
     available_width = page_width - margin_left - margin_right
 
     # Calculate total column width
-    total_column_width = sum(column_widths[col] for col in column_names)
+    total_column_width = 170
 
     # Scale column widths if necessary
     if total_column_width > available_width:
