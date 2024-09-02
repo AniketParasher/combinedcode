@@ -113,7 +113,7 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
     pdf.set_font('Arial', 'B', 7)
 
     # Calculate the Width of the Merged Cell
-    merged_cell_width = sum(column_widths[col] for col in column_names)  # Total width based on scaled column widths
+    merged_cell_width = 170  # Total width based on scaled column widths
 
     # Add the Title and Subtitle in the Center
     pdf.cell(merged_cell_width, 12, '', border='LTR', ln=1, align='C')  # Create an empty cell with borders
