@@ -84,7 +84,6 @@ def process_data(uploaded_file, partner_id, buffer_percent, grade, district_digi
     return data_expanded, data_mapped, teacher_codes
 
 # Function to create the attendance list PDF
-# Function to create the attendance list PDF
 def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_values, df):
     pdf.add_page()
 
@@ -100,7 +99,7 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
     available_width = page_width - margin_left - margin_right
 
     # Calculate total column width
-    total_column_width = 170
+    total_column_width = sum(column_widths[col] for col in column_names)
 
     # Scale column widths if necessary
     if total_column_width > available_width:
@@ -385,7 +384,7 @@ def main():
 
         # Number of columns and column names for the table
         column_names = ['S.NO', 'STUDENT ID', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SESSION', 'SUBJECT 1', 'SUBJECT 2']
-        column_widths = 170
+        column_widths = 
 
         if st.button("Click to Generate PDFs and Zip"):
             # Create a temporary directory to save PDFs
