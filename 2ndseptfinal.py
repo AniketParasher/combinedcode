@@ -387,7 +387,7 @@ def main():
             df = pd.read_excel(excel_data)
 
             # Process data
-            grouping_columns = [col for col in df.columns if col not in ['STUDENT ID', 'GENDER'] and df[col].notna().any()]
+            grouping_columns = [col for col in df.columns if col not in ['STUDENT ID', 'Gender'] and df[col].notna().any()]
             grouped = df.groupby(grouping_columns).agg(student_count=('STUDENT ID', 'nunique')).reset_index()
 
             if 'CLASS' in grouped.columns and grouped['CLASS'].astype(str).str.contains('\D').any():
