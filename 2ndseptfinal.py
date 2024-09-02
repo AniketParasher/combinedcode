@@ -95,8 +95,7 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
     pdf.set_auto_page_break(auto=True, margin=20)
 
     # Page width and margins
-    page_width = 287.78  # Custom page width in mm
-    page_height = 372.62 # Custom page height in mm
+    page_width = 210  # A4 page width in mm
     margin_left = 10
     margin_right = 10
     available_width = page_width - margin_left - margin_right
