@@ -180,7 +180,7 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
     pdf.set_font('Arial', 'B', 5)
 
     # Add the CLASS and SECTION labels
-    pdf.cell(info_cell_width, 3, f"CLASS : {info_labels['CLASS']}", border='LR', ln=1)
+    pdf.cell(info_cell_width, 3, f"CLASS : {info_labels['Grade']}", border='LR', ln=1)
     pdf.cell(info_cell_width, 3, f"SECTION : {info_labels['SECTION']}", border='LR', ln=1)
 
     # Draw a border around the table header
