@@ -244,7 +244,7 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
     pdf.cell(23, 4.5, 'Present/Absent', border='LBR', align='C')  # SUBJECT 1 details
     pdf.cell(23, 4.5, 'Present/Absent', border='LBR', align='C')  # SUBJECT 2 details
 
-    pdf.ln(0)
+    pdf.ln(4.5)
 
     # Table Rows (based on student_count)
     pdf.set_font('Arial', '', 6)
