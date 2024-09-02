@@ -290,16 +290,16 @@ def main():
         result = grouped.to_dict(orient='records')
 
         # Number of columns and column names for the table
-        column_names = ['S.NO', 'STUDENT ID', 'PASSCODE', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SUBJECT 1 (PRESENT/ABSENT)', 'SUBJECT 2 (PRESENT/ABSENT)']
+        column_names = ['S.NO', 'STUDENT ID', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SESSION', 'SUBJECT 1', 'SUBJECT 2']
         column_widths = {
-            'S.NO': 8,
-            'STUDENT ID': 18,
-            'PASSCODE': 18,
-            'STUDENT NAME': 61,
-            'GENDER': 15,
-            'TAB ID': 15,
-            'SUBJECT 1 (PRESENT/ABSENT)': 35,
-            'SUBJECT 2 (PRESENT/ABSENT)': 35
+            'S.NO': 6,
+            'STUDENT ID': 15,
+            'STUDENT NAME': 60,
+            'GENDER': 10,
+            'TAB ID': 10,
+            'SESSION' : 23,
+            'SUBJECT 1': 23,
+            'SUBJECT 2': 23
         }
 
         if st.button("Click to Generate PDFs and Zip"):
