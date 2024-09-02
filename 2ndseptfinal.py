@@ -384,7 +384,16 @@ def main():
 
         # Number of columns and column names for the table
         column_names = ['S.NO', 'STUDENT ID', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SESSION', 'SUBJECT 1', 'SUBJECT 2']
-        column_widths = 
+        column_widths = {
+            'S.NO': 6,
+            'STUDENT ID': 15,
+            'STUDENT NAME': 60,
+            'GENDER': 10,
+            'TAB ID': 10,
+            'SESSION' : 23,
+            'SUBJECT 1': 23,
+            'SUBJECT 2': 23
+        }
 
         if st.button("Click to Generate PDFs and Zip"):
             # Create a temporary directory to save PDFs
