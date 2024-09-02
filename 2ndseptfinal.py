@@ -382,66 +382,81 @@ def main():
         # Process the `data_mapped` as the Excel file for attendance list generation
         excel_data = st.session_state['download_mapped'].getvalue()
 
-        if excel_data and image_path:
-            # Read Excel file
-            df = pd.read_excel(excel_data)
+        df1 = pd.read_excel(excel_data)
 
-            # Process data
-            grouping_columns = [col for col in df.columns if col not in ['STUDENT ID', 'Gender'] and df[col].notna().any()]
-            grouped = df.groupby(grouping_columns).agg(student_count=('STUDENT ID', 'nunique')).reset_index()
+        # Define possible variations of 'Student ID' column names
+        student_id_variations = ['STUDENT ID', 'STUDENT_ID', 'ROLL_NUMBER', 'Roll_Number', 'Roll Number']
 
-            if 'CLASS' in grouped.columns and grouped['CLASS'].astype(str).str.contains('\D').any():
-                grouped['CLASS'] = grouped['CLASS'].astype(str).str.extract('(\d+)')
+        # Identify the actual column name from the variations
+        student_id_column = None
+        for variation in student_id_variations:
+            if variation in df1.columns:
+                student_id_column = variation
+                break
 
-            result = grouped.to_dict(orient='records')
+        if student_id_column is None:
+            raise ValueError("No recognized student ID column found in the data")
 
-            # Number of columns and column names for the table
-            column_names = ['S.NO', 'STUDENT ID', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SESSION', 'SUBJECT 1', 'SUBJECT 2']
-            column_widths = {
-                'S.NO': 6,
-                'STUDENT ID': 15,
-                'STUDENT NAME': 60,
-                'GENDER': 10,
-                'TAB ID': 10,
-                'SESSION' : 23,
-                'SUBJECT 1': 23,
-                'SUBJECT 2': 23
-            }
+        # Standardize column name to 'STUDENT_ID'
+        df = df1.rename(columns={student_id_column: 'STUDENT ID'})
 
-            if st.button("Click to Generate PDFs and Zip"):
-                # Create a temporary directory to save PDFs
-                with tempfile.TemporaryDirectory() as tmp_dir:
-                    pdf_paths = []
+        # Process data
+        grouping_columns = [col for col in df.columns if col not in ['STUDENT ID', 'Gender'] and df[col].notna().any()]
+        grouped = df.groupby(grouping_columns).agg(student_count=('STUDENT ID', 'nunique')).reset_index()
 
-                    for record in result:
-                        school_name = record.get('School Name', 'default_code')
-                        block_name = record.get('Block Name', 'default_code')
+        if 'CLASS' in grouped.columns and grouped['CLASS'].astype(str).str.contains('\D').any():
+            grouped['CLASS'] = grouped['CLASS'].astype(str).str.extract('(\d+)')
 
-                        # Create a PDF for each school
-                        pdf = FPDF(orientation='P', unit='mm', format='A4')
-                        pdf.set_left_margin(18)
-                        pdf.set_right_margin(18)
+        result = grouped.to_dict(orient='records')
 
-                        create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
+        # Number of columns and column names for the table
+        column_names = ['S.NO', 'STUDENT ID', 'PASSCODE', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SUBJECT 1', 'SUBJECT 2']
+        column_widths = {
+            'S.NO': 8,
+            'STUDENT ID': 18,
+            'PASSCODE': 18,
+            'STUDENT NAME': 61,
+            'GENDER': 15,
+            'TAB ID': 15,
+            'SUBJECT 1': 35,
+            'SUBJECT 2': 35
+        }
 
-                        # Save the PDF in the temporary directory
-                        pdf_path = os.path.join(tmp_dir, f'{school_name}_{block_name}.pdf')
-                        pdf.output(pdf_path)
-                        pdf_paths.append(pdf_path)
+        if st.button("Click to Generate PDFs and Zip"):
+            # Create a temporary directory to save PDFs
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                pdf_paths = []
 
-                    # Create a zip file containing all PDFs
-                    zip_buffer = io.BytesIO()
-                    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-                        for pdf_path in pdf_paths:
-                            zip_file.write(pdf_path, os.path.basename(pdf_path))
+                for record in result:
+                    school_name = record.get('School Name', 'default_code')
+                    block_name = record.get('Block Name', 'default_code')
 
-                    # Provide download link for the zip file
-                    st.download_button(
-                        label="Click to Download Zip File",
-                        data=zip_buffer.getvalue(),
-                        file_name="attendance_Sheets.zip",
-                        mime="application/zip"
-                    )
+                    # Create a PDF for each school
+                    pdf = FPDF(orientation='P', unit='mm', format='A4')
+                    pdf.set_left_margin(10)
+                    pdf.set_right_margin(10)
+
+                    create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
+
+                    # Save the PDF in the temporary directory
+                    pdf_path = os.path.join(tmp_dir, f'{school_name} , {block_name}.pdf')
+                    pdf.output(pdf_path)
+                    pdf_paths.append(pdf_path)
+
+                # Create a zip file containing all PDFs
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+                    for pdf_path in pdf_paths:
+                        zip_file.write(pdf_path, os.path.basename(pdf_path))
+
+                # Provide download link for the zip file
+                st.download_button(
+                    label="Click to Download Zip File",
+                    data=zip_buffer.getvalue(),
+                    file_name="attendance_Sheets.zip",
+                    mime="application/zip"
+                )
+
 
 if __name__ == "__main__":
     main()
