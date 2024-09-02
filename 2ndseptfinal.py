@@ -410,16 +410,16 @@ def main():
         result = grouped.to_dict(orient='records')
 
         # Number of columns and column names for the table
-        column_names = ['S.NO', 'STUDENT ID', 'PASSCODE', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SUBJECT 1', 'SUBJECT 2']
+        column_names = ['S.NO', 'STUDENT ID', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SESSION', 'SUBJECT 1', 'SUBJECT 2']
         column_widths = {
-            'S.NO': 8,
-            'STUDENT ID': 18,
-            'PASSCODE': 18,
-            'STUDENT NAME': 61,
-            'GENDER': 15,
-            'TAB ID': 15,
-            'SUBJECT 1': 35,
-            'SUBJECT 2': 35
+            'S.NO': 6,
+            'STUDENT ID': 15,
+            'STUDENT NAME': 60,
+            'GENDER': 10,
+            'TAB ID': 10,
+            'SESSION' : 23,
+            'SUBJECT 1': 23,
+            'SUBJECT 2': 23
         }
 
         if st.button("Click to Generate PDFs and Zip"):
@@ -428,18 +428,17 @@ def main():
                 pdf_paths = []
 
                 for record in result:
-                    school_name = record.get('School Name', 'default_code')
-                    block_name = record.get('Block Name', 'default_code')
+                    school_code = record.get('School Code', 'default_code')
 
                     # Create a PDF for each school
                     pdf = FPDF(orientation='P', unit='mm', format='A4')
-                    pdf.set_left_margin(10)
-                    pdf.set_right_margin(10)
+                    pdf.set_left_margin(18)
+                    pdf.set_right_margin(18)
 
                     create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
 
                     # Save the PDF in the temporary directory
-                    pdf_path = os.path.join(tmp_dir, f'{school_name} , {block_name}.pdf')
+                    pdf_path = os.path.join(tmp_dir, f'attendance_list_{school_code}.pdf')
                     pdf.output(pdf_path)
                     pdf_paths.append(pdf_path)
 
