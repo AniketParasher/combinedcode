@@ -248,7 +248,7 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
     student_count = info_values.get('student_count', 0)  # Use 0 if 'student_count' is missing or not found
 
     # Fill in the student IDs for the selected school code
-    student_ids = df[df['School Code'] == info_values.get('School Code', '')]['Roll_Number'].tolist()
+    student_ids = df[df['School Code'] == info_values.get('School Code', '')]['STUDENT ID'].tolist()
 
     for i in range(student_count):
         # Fill in S.NO column
