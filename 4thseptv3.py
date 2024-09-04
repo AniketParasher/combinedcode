@@ -656,8 +656,6 @@ def main():
                     pdf.output(pdf_path)
                     pdf_paths.append(pdf_path)
         
-                    st.write("Saving PDF to:", pdf_path)
-        
                     if index == 0:  # Save the first PDF for preview
                         preview_pdf_path = pdf_path
         
