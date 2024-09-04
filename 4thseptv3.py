@@ -637,8 +637,6 @@ def main():
                         os.makedirs(district_folder, exist_ok=True)
                         district_folders[district_name] = district_folder
         
-                st.write("District folders created:", district_folders)
-        
                 for index, record in enumerate(result):
                     school_name = record.get('School Name', 'default_school')
                     district_name = record.get('District Name', 'default_district')
