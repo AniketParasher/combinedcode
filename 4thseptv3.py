@@ -658,14 +658,14 @@ def main():
 
                     if index == 0:  # Save the first PDF for preview
                         preview_pdf_path = pdf_path
-
-                st.header("PDF Preview")
                 
+                st.header("PDF Preview")
+                # Embed the first PDF in an iframe for preview
                 if preview_pdf_path:
                     with open(preview_pdf_path, "rb") as pdf_file:
                         base64_pdf = base64.b64encode(pdf_file.read()).decode('utf-8')
                         pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="900" type="application/pdf"></iframe>'
-                        components.html(pdf_display, height=900, width=700)
+                        st.markdown(pdf_display, unsafe_allow_html=True)
 
                 # Create a zip file containing all district folders
                 zip_buffer = io.BytesIO()
@@ -676,15 +676,11 @@ def main():
                                 filepath = os.path.join(foldername, filename)
                                 zip_file.write(filepath, os.path.relpath(filepath, tmp_dir))
 
-                zip_buffer = io.BytesIO()
-                with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-                    for pdf_path in pdf_paths:
-                        zip_file.write(pdf_path, os.path.basename(pdf_path))
-
+                # Provide download link for the zip file
                 st.download_button(
-                    label="Download All PDFs as Zip",
+                    label="Click to Download Zip File",
                     data=zip_buffer.getvalue(),
-                    file_name="all_schools_attendance.zip",
+                    file_name="attendance_Sheets.zip",
                     mime="application/zip"
                 )
                 st.session_state['thank_you_displayed'] = True  # Set the thank you message state
