@@ -457,15 +457,10 @@ def main():
             school_format = 'X' * school_digits
             st.markdown(f"<p style='font-size: small;'>Your School Code format would be: {school_format}</p>", unsafe_allow_html=True)
 
+
             
             # Warning box in yellow color
-            st.markdown(
-                """
-                <div style='background-color: aqua; padding: 5px; border-radius: 5px; margin-bottom: 10px;'>
-                <p><span style='color: red; font-weight: bold;'>Note:</span> <span style='color: black;'>Avoid Digit Overload in your Enrolments</span></p>
-                </div>
-                """,
-                unsafe_allow_html=True
+            st.error( """Note: Avoid Digit Overload in your Enrolments"""
             )
 
         
