@@ -4,21 +4,27 @@ import numpy as np
 import zipfile
 import os
 import tempfile
+import base64
 import io
 import xlsxwriter
 from fpdf import FPDF
+import streamlit_pdf_viewer as pdf_viewer
+from streamlit_folium import st_folium
+import folium
+import plotly.express as px
 
 # Define the parameter descriptions
 parameter_descriptions = {
-    'A1': "School_ID, Grade, student_no: Uses School_ID, Grade, and student_no to generate the ID.",
-    'A2': "Block_ID, School_ID, Grade, student_no: Uses Block_ID, School_ID, Grade, and student_no to generate the ID.",
-    'A3': "District_ID, School_ID, Grade, student_no: Uses District_ID, School_ID, Grade, and student_no to generate the ID.",
-    'A4': "Partner_ID, School_ID, Grade, student_no: Uses Partner_ID, School_ID, Grade, and student_no to generate the ID.",
-    'A5': "District_ID, Block_ID, School_ID, Grade, student_no: Uses District_ID, Block_ID, School_ID, Grade, and student_no to generate the ID.",
-    'A6': "Partner_ID, Block_ID, School_ID, Grade, student_no: Uses Partner_ID, Block_ID, School_ID, Grade, and student_no to generate the ID.",
-    'A7': "Partner_ID, District_ID, School_ID, Grade, student_no: Uses Partner_ID, District_ID, School_ID, Grade, and student_no to generate the ID.",
-    'A8': "Partner_ID, District_ID, Block_ID, School_ID, Grade, student_no: Uses Partner_ID, District_ID, Block_ID, School_ID, Grade, and student_no to generate the ID."
+    'A1': "School + Grade + Student",
+    'A2': "Block + School + Grade + Student",
+    'A3': "District + School + Grade + Student",
+    'A4': "Partner + School + Grade + Student",
+    'A5': "District + Block + School + Grade + Student",
+    'A6': "Partner + Block + School + Grade + Student",
+    'A7': "Partner + District + School + Grade + Student",
+    'A8': "Partner + District + Block + School + Grade + Student"
 }
+
 # Define the new mapping for parameter sets
 parameter_mapping = {
     'A1': "School_ID,Grade,student_no",
@@ -30,6 +36,7 @@ parameter_mapping = {
     'A7': "Partner_ID,District_ID,School_ID,Grade,student_no",
     'A8': "Partner_ID,District_ID,Block_ID,School_ID,Grade,student_no"
 }
+
 def generate_custom_id(row, params):
     params_split = params.split(',')
     custom_id = []
@@ -53,7 +60,6 @@ def process_data(uploaded_file, partner_id, buffer_percent, grade, district_digi
     # Calculate Total Students With Buffer based on the provided buffer percentage
     data['Total_Students_With_Buffer'] = np.floor(data['Total_Students'] * (1 + buffer_percent / 100))
     # Generate student IDs based on the calculated Total Students With Buffer
-
     def generate_student_ids(row):
         if pd.notna(row['Total_Students_With_Buffer']) and row['Total_Students_With_Buffer'] > 0:
             student_ids = [
@@ -63,25 +69,27 @@ def process_data(uploaded_file, partner_id, buffer_percent, grade, district_digi
             return student_ids
         return []
     data['Student_IDs'] = data.apply(generate_student_ids, axis=1)
-
     # Expand the data frame to have one row per student ID
     data_expanded = data.explode('Student_IDs')
-
     # Extract student number from the ID
     data_expanded['student_no'] = data_expanded['Student_IDs'].str[-student_digits:]
-
     # Use the selected parameter set for generating Custom_ID
     data_expanded['Custom_ID'] = data_expanded.apply(lambda row: generate_custom_id(row, parameter_mapping[selected_param]), axis=1)
-
-    # Generate the additional Excel sheets with mapped columns
+    # Generate the additional Excel sheets with mapped columns (without the Gender column)
     data_mapped = data_expanded[['Custom_ID', 'Grade', 'School', 'School_ID', 'District', 'Block']].copy()
     data_mapped.columns = ['Roll_Number', 'Grade', 'School Name', 'School Code', 'District Name', 'Block Name']
-    data_mapped['Gender'] = np.random.choice(['Male', 'Female'], size=len(data_mapped), replace=True)
-
     # Generate Teacher_Codes sheet
     teacher_codes = data[['School', 'School_ID']].copy()
     teacher_codes.columns = ['School Name', 'Teacher Code']
     return data_expanded, data_mapped, teacher_codes
+
+def download_link(df, filename, link_text):
+    towrite = io.BytesIO()
+    with pd.ExcelWriter(towrite, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Sheet1')
+    towrite.seek(0)
+    b64 = base64.b64encode(towrite.read()).decode()
+    return f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}" class="download-link"><img src="https://img.icons8.com/material-outlined/24/000000/download.png" class="download-icon"/> {link_text}</a>'
 
 # Function to create the attendance list PDF
 def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_values, df):
@@ -179,39 +187,9 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
     pdf.cell(info_cell_width, 3, f"CLASS : {info_labels['CLASS']}", border='LR', ln=1)
     pdf.cell(info_cell_width, 3, f"SECTION : {info_labels['SECTION']}", border='LR', ln=1)
 
-    # # Draw a border around the table header
-    # pdf.set_font('Arial', 'B', 5)
-    # table_cell_height = 9
-
-    # # Table Header
-    # for col_name in column_names:
-    #     pdf.cell(column_widths[col_name], table_cell_height, col_name, border=1, align='C')
-    # pdf.ln(table_cell_height)
-
     # Draw a border around the table header
     pdf.set_font('Arial', 'B', 5)
     table_cell_height = 9
-
-    # pdf.cell(6, 4.5, 'S.NO', 1, border='LTR', align='C')
-    # pdf.cell(17, 4.5, 'STUDENT ID', 1, border='LTR', align='C')
-    # pdf.cell(62, 4.5, 'STUDENT NAME', 1, border='LTR', align='C')
-    # pdf.cell(13, 4.5, 'GENDER', 1, border='LTR', align='C')
-    # pdf.cell(13, 4.5, 'TAB ID', 1, border='LTR', align='C')
-    # pdf.cell(13, 4.5, 'SESSION', 1, border='LTR', align='C')
-    # pdf.cell(23, 4.5, 'SUBJECT 1', 1, border='LTR', align='C')
-    # pdf.cell(23, 4.5, 'SUBJECT 2', 1, border='LTR', align='C')  # End of the row
-
-    # # Second row of headers (merged cells)
-    # pdf.set_font("Arial", size=5)
-    # pdf.cell(6, 4.5, '', 1, border='LBR', align='C')  # Empty cell under S.NO
-    # pdf.cell(17,4.5, '', 1, border='LBR', align='C')  # Empty cell under STUDENT ID
-    # pdf.cell(62,4.5, '', 1, border='LBR', align='C')  # Empty cell under STUDENT NAME
-    # pdf.cell(13,4.5, '', 1, border='LBR', align='C')  # Empty cell under GENDER
-    # pdf.cell(13,4.5, '', 1, border='LBR', align='C')  # Empty cell under TAB ID
-    # pdf.cell(13,4.5, '(morning/afternoon)', 1, border='LBR', align='C')  # SESSION description
-    # pdf.cell(23,4.5, 'Present/Absent', 1, border='LBR', align='C')  # SUBJECT 1 details
-    # pdf.cell(23,4.5, 'Present/Absent', 1, border='LBR', align='C')  # SUBJECT 2 details
-    # Set the cursor position back to the beginning of the merged cell
 
     # Add the Title and Subtitle in the Center
 
@@ -272,32 +250,111 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
 
         pdf.ln(table_cell_height)
 
-def main():
 
-    st.title("Student ID Generator")
+def main():
+    # If the thank you message has already been displayed, show only the thank you message
+    if st.session_state['thank_you_displayed']:
+        st.markdown("<h2 style='text-align: center; color: green;'>Thank You for using the Attendance Sheet Generator!</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-size: 18px;'>We hope the generated PDFs meet your expectations.</p>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center;'>We'd love to hear your feedback!</h3>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center;'>Please fill out our <a href='https://forms.gle/jpeC9xmtzSBqSQhL9' target='_blank'>feedback form</a>.</p>", unsafe_allow_html=True)
+        return
+        
+    # Centered title
+    st.markdown("<h1 style='text-align: center;'>Tool for ID Generation</h1>", unsafe_allow_html=True)
     
-    # Initialize session state for buttons
+    # Initialize session state
     if 'buttons_initialized' not in st.session_state:
         st.session_state['buttons_initialized'] = True
+        st.session_state['generate_clicked'] = False
         st.session_state['download_data'] = None
-        st.session_state['download_mapped'] = None
-        st.session_state['download_teachers'] = None
-        st.title("Input File Structure")
-        # URL of the image in your GitHub repository
-        image_url = "https://raw.githubusercontent.com/pranay-raj-goud/Test2/main/image%20(19).png"
-        # Display the image with a caption
-        st.image(image_url, caption="Your input file should be in this format", use_column_width=True)
+        st.session_state['checkboxes_checked'] = False
+        st.session_state['thank_you_displayed'] = False  # Initialize thank you state
+
+    # Data for the example table
+    data = {
+        'District': ['District A'],
+        'Block': ['Block A'],
+        'School_ID': [1001],
+        'School': ['School A'],
+        'Total_Students': [300]
+    }
+    df = pd.DataFrame(data)
+    
+    # Convert DataFrame to HTML
+    html_table = df.to_html(index=False, border=0, classes='custom-table')
+    
+    # Custom CSS to style the table and the warning box
+    css = """
+    <style>
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+    .custom-table th, .custom-table td {
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #ddd;
+    }
+    .custom-table th {
+        background-color: #F4F4F4;
+    }
+    .download-link {
+        color: green;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .download-link:hover {
+        text-decoration: underline;
+    }
+    .download-icon {
+        margin-right: 8px;
+    }
+    .warning-box {
+        background-color: #FFFFE0;
+        border: 1px solid #FFD700;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+    }
+    </style>
+    """
+    
+    # Display the text and table
+    st.markdown(css, unsafe_allow_html=True)
+    st.markdown("<p style='font-size: small;'>Please rename your column headers as per input file structure shown:</p>", unsafe_allow_html=True)
+    st.markdown(html_table, unsafe_allow_html=True)
+    
+    # Display a single note with two pointers, separated by line breaks for clarity
+    st.markdown(
+        """
+        <span style='color:red; font-weight:bold;'>Note:</span><br>
+        <span style='color:black;'>• School_ID column should be unique</span><br>
+        <span style='color:black;'>• Please upload an XLSX file that is less than 200MB in size.</span>
+        """,
+        unsafe_allow_html=True
+    )
+    
     # File uploader section
     uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
     if uploaded_file is not None:
-        st.write("File uploaded successfully!")
+        # Centered and colored message
+        st.markdown("<p style='text-align: center; color: green;'>File uploaded successfully!</p>", unsafe_allow_html=True)
+        
         # Checkboxes to select mode
-        run_default = st.checkbox("Rock the Default Settings")
-        customize_id = st.checkbox("Play by Your Rules")
+        run_default = st.checkbox("IDs with Default Settings")
+        customize_id = st.checkbox("IDs with Customized Settings")
+        
         # Ensure only one checkbox is selected
         if run_default and customize_id:
             st.warning("Please select only one option.")
             return
+
+        # Set checkboxes_checked to True if either checkbox is selected
+        st.session_state['checkboxes_checked'] = run_default or customize_id
+        
         if run_default:
             # Default parameters
             partner_id = 1
@@ -305,66 +362,104 @@ def main():
             buffer_percent = 0.0
             district_digits = 2
             block_digits = 2
-            school_digits = 3
+            school_digits = 4
             student_digits = 3
-            selected_param = 'A4'  # Default to A4
-            st.write("Default parameters are set.")
-        if customize_id:
+            selected_param = 'A4'  # Default parameter
+        elif customize_id:
             # Custom parameters
-            partner_id = st.number_input("Partner ID", min_value=0, value=1)
+            st.markdown("<p style='color: blue;'>Please provide required Values</p>", unsafe_allow_html=True)
+            partner_id = st.number_input("Partner ID", min_value=1, value=1)
+            buffer_percent = st.number_input("Buffer Percentage", min_value=0.0, value=0.0, format="%.2f")
             grade = st.number_input("Grade", min_value=1, value=1)
-            buffer_percent = st.number_input("Buffer (%)", min_value=0.0, max_value=100.0, value=30.0)
+            
+            # Message in blue color above District ID Digits
+            st.markdown("<p style='color: blue;'>Please provide required Digits</p>", unsafe_allow_html=True)
             district_digits = st.number_input("District ID Digits", min_value=1, value=2)
             block_digits = st.number_input("Block ID Digits", min_value=1, value=2)
             school_digits = st.number_input("School ID Digits", min_value=1, value=3)
             student_digits = st.number_input("Student ID Digits", min_value=1, value=4)
+            
             # Display parameter descriptions directly in selectbox
             parameter_options = list(parameter_descriptions.values())
-            selected_description = st.selectbox("Select Parameter Set", parameter_options)
+            st.markdown(
+                """
+                <style>
+                .custom-selectbox-label {
+                    color: blue;
+                    margin: 0;
+                }
+                </style>
+                <p class='custom-selectbox-label'>Please Select Parameter Set for Desired Combination of Student IDs</p>
+                """,
+                unsafe_allow_html=True
+            )
+            selected_description = st.selectbox("", parameter_options)
+            
             # Get the corresponding parameter key
             selected_param = list(parameter_descriptions.keys())[parameter_options.index(selected_description)]
-            st.write(parameter_descriptions[selected_param])
-            # Add notification messages
-            st.warning("Avoid Digit Overload in Your Enrollments:")
-            #st.warning("Ensure that the number of digits for District ID, Block ID, School ID, and Student ID is appropriate to avoid overload.")
-        if run_default or customize_id:
+            
+            # Create the format string based on selected_param
+            param_description = parameter_descriptions[selected_param]
+            format_parts = param_description.split(' + ')
+            format_string = ' '.join([f"{'X' * (school_digits if 'School' in part else 
+            block_digits if 'Block' in part else 
+            district_digits if 'District' in part else 
+            len(str(grade)) if 'Grade' in part else 
+            len(str(partner_id)) if 'Partner' in part else 
+            student_digits)}" for part in format_parts])
+            
+            # Display the ID format with a smaller font size
+            st.markdown(f"<p style='font-size: small;'>Your ID format would be: {format_string}</p>", unsafe_allow_html=True)
+            
+            # Warning box in yellow color
+            st.markdown("<div class='warning-box'><p style='color: black;'>Note: Avoid Digit Overload in your Enrolments</p></div>", unsafe_allow_html=True)
+        
+        # Generate button action
+        if st.session_state['checkboxes_checked']:
             if st.button("Generate IDs"):
-                data_expanded, data_mapped, teacher_codes = process_data(uploaded_file, partner_id, buffer_percent, grade, district_digits, block_digits, school_digits, student_digits, selected_param)
-                # Save the data for download
-                towrite1 = io.BytesIO()
-                towrite2 = io.BytesIO()
-                towrite3 = io.BytesIO()
-                with pd.ExcelWriter(towrite1, engine='xlsxwriter') as writer:
-                    data_expanded.to_excel(writer, index=False)
-                with pd.ExcelWriter(towrite2, engine='xlsxwriter') as writer:
-                    data_mapped.to_excel(writer, index=False)
-                with pd.ExcelWriter(towrite3, engine='xlsxwriter') as writer:
-                    teacher_codes.to_excel(writer, index=False)
-                towrite1.seek(0)
-                towrite2.seek(0)
-                towrite3.seek(0)
-                # Update session state for download links
-                st.session_state['download_data'] = towrite1
-                st.session_state['download_mapped'] = towrite2
-                st.session_state['download_teachers'] = towrite3
-    # Always show download buttons
-    #if st.session_state['download_data'] is not None:
-        #st.download_button(label="Download Student IDs Excel", data=st.session_state['download_data'], file_name="Student_Ids.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    if st.session_state['download_mapped'] is not None:
-        st.download_button(label="Download Mapped Student IDs Excel", data=st.session_state['download_mapped'], file_name="Student_Ids_Mapped.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    if st.session_state['download_teachers'] is not None:
-        st.download_button(label="Download Teacher Codes Excel", data=st.session_state['download_teachers'], file_name="Teacher_Codes.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        # Part 2: Attendance PDF Generation
-    if st.session_state['download_mapped'] is not None:
-        st.title("Attendance List PDF Generator")
+                if uploaded_file is not None:
+                    try:
+                        # Process the uploaded file
+                        expanded_data, mapped_data, teacher_codes = process_data(
+                            uploaded_file,
+                            partner_id,
+                            buffer_percent,
+                            grade,
+                            district_digits,
+                            block_digits,
+                            school_digits,
+                            student_digits,
+                            selected_param
+                        )
+                        # Update session state with generated data
+                        st.session_state['download_data'] = (expanded_data, mapped_data, teacher_codes)
+                        st.session_state['generate_clicked'] = True
+                    except Exception as e:
+                        st.error(f"Error processing file: {e}")
+    
+    # Download buttons after IDs are generated
+    if st.session_state['generate_clicked'] and st.session_state['download_data'] is not None:
+        expanded_data, mapped_data, teacher_codes = st.session_state['download_data']
+        
+        # Download button for full data with Custom_IDs and Student_IDs
+        #st.markdown(download_link(expanded_data, "full_data.xlsx", "Download Full Data (with Custom_IDs and Student_IDs)"), unsafe_allow_html=True)
+        
+        # Download button for mapped data
+        st.markdown(download_link(mapped_data, "mapped_data.xlsx", "Download Student IDs"), unsafe_allow_html=True)
+        
+        # Download button for teacher codes
+        st.markdown(download_link(teacher_codes, "teacher_codes.xlsx", "Download School Codes"), unsafe_allow_html=True)
+
+    # if st.session_state['mapped_data'] is not None:
+        st.title("Attendance Sheet Generator")
 
         image_path = "https://raw.githubusercontent.com/AniketParasher/pdfcreator/main/cg.png"
 
         # Process the `data_mapped` as the Excel file for attendance list generation
-        excel_data = st.session_state['download_mapped'].getvalue()
+        # excel_data = st.session_state['mapped_data'].getvalue()
 
-        df1 = pd.read_excel(excel_data)
-
+        # df1 = pd.read_excel(excel_data)
+        df1 = mapped_data
         # Define possible variations of 'Student ID' column names
         student_id_variations = ['STUDENT ID', 'STUDENT_ID', 'ROLL_NUMBER', 'Roll_Number', 'Roll Number']
 
@@ -400,14 +495,25 @@ def main():
             grouped['CLASS'] = grouped['CLASS'].astype(str).str.extract('(\d+)')
 
         result = grouped.to_dict(orient='records')
-        # # Process data
-        # grouping_columns = [col for col in df.columns if col not in ['STUDENT ID'] and df[col].notna().any()]
-        # grouped = df.groupby(grouping_columns).agg(student_count=('STUDENT ID', 'nunique')).reset_index()
 
-        # if 'CLASS' in grouped.columns and grouped['CLASS'].astype(str).str.contains('\D').any():
-        #     grouped['CLASS'] = grouped['CLASS'].astype(str).str.extract('(\d+)')
+        # KPI Cards
+        st.subheader("Your Summary")
+        
+        # Calculating KPIs
+        num_students = len(df['STUDENT ID'].unique())
+        num_schools = df['School Name'].nunique() if 'School Name' in df.columns else 0
+        num_blocks = df['Block Name'].nunique() if 'Block Name' in df.columns else 0
+        num_districts = df['District Name'].nunique() if 'District Name' in df.columns else 0
 
-        # result = grouped.to_dict(orient='records')
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Number of Students", num_students)
+        with col2:
+            st.metric("Number of Schools", num_schools)
+        with col3:
+            st.metric("Number of Blocks", num_blocks)
+        with col4:
+            st.metric("Number of Districts", num_districts)
 
         # Number of columns and column names for the table
         column_names = ['S.NO', 'STUDENT ID', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SESSION', 'SUBJECT 1', 'SUBJECT 2']
@@ -422,32 +528,60 @@ def main():
             'SUBJECT 2': 24
         }
 
+        # Add an input field for file naming convention
+        filename_template = st.text_input("Enter file naming format (use {school_name} and {block_name})", "{school_name}_{block_name}")
+
         if st.button("Click to Generate PDFs and Zip"):
-            # Create a temporary directory to save PDFs
             with tempfile.TemporaryDirectory() as tmp_dir:
                 pdf_paths = []
+                preview_pdf_path = None  # To store the path of the first PDF
 
+                # Create folders for districts
+                district_folders = {}
                 for record in result:
+                    district_name = record.get('District Name', 'default_code')
+                    if district_name not in district_folders:
+                        district_folder = os.path.join(tmp_dir, district_name)
+                        if not os.path.exists(district_folder):
+                            os.makedirs(district_folder)
+                        district_folders[district_name] = district_folder
+
+                for index, record in enumerate(result):
                     school_name = record.get('School Name', 'default_code')
                     block_name = record.get('Block Name', 'default_code')
+                    district_name = record.get('District Name', 'default_code')
 
-                    # Create a PDF for each school
                     pdf = FPDF(orientation='P', unit='mm', format='A4')
                     pdf.set_left_margin(18)
                     pdf.set_right_margin(18)
 
                     create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
 
-                    # Save the PDF in the temporary directory
-                    pdf_path = os.path.join(tmp_dir, f'{school_name},{block_name}.pdf')
+                    # Generate the filename based on user input
+                    filename = filename_template.format(school_name=school_name, block_name=block_name)
+                    pdf_path = os.path.join(district_folders[district_name], f'{filename}.pdf')
                     pdf.output(pdf_path)
                     pdf_paths.append(pdf_path)
 
-                # Create a zip file containing all PDFs
+                    if index == 0:  # Save the first PDF for preview
+                        preview_pdf_path = pdf_path
+                
+                st.header("PDF Preview")
+                # Embed the first PDF in an iframe for preview
+                if preview_pdf_path:
+                    with open(preview_pdf_path, "rb") as pdf_file:
+                        base64_pdf = base64.b64encode(pdf_file.read()).decode('utf-8')
+                        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="900" type="application/pdf"></iframe>'
+                        st.markdown(pdf_display, unsafe_allow_html=True)
+
+                # Create a zip file containing all district folders
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-                    for pdf_path in pdf_paths:
-                        zip_file.write(pdf_path, os.path.basename(pdf_path))
+                    for district_name, folder_path in district_folders.items():
+                        for foldername, _, filenames in os.walk(folder_path):
+                            for filename in filenames:
+                                filepath = os.path.join(foldername, filename)
+                                zip_file.write(filepath, os.path.relpath(filepath, tmp_dir))
 
                 # Provide download link for the zip file
                 st.download_button(
@@ -456,7 +590,7 @@ def main():
                     file_name="attendance_Sheets.zip",
                     mime="application/zip"
                 )
-
+                st.session_state['thank_you_displayed'] = True  # Set the thank you message state
 
 if __name__ == "__main__":
     main()
