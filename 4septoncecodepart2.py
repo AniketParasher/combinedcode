@@ -437,10 +437,62 @@ def main():
                         st.session_state['generate_clicked'] = True
                     except Exception as e:
                         st.error(f"Error processing file: {e}")
-    
+
     # Download buttons after IDs are generated
     if st.session_state['generate_clicked'] and st.session_state['download_data'] is not None:
         expanded_data, mapped_data, teacher_codes = st.session_state['download_data']
+
+        df1 = mapped_data
+        # Define possible variations of 'Student ID' column names
+        student_id_variations = ['STUDENT ID', 'STUDENT_ID', 'ROLL_NUMBER', 'Roll_Number', 'Roll Number']
+        # Identify the actual column name from the variations
+        student_id_column = None
+        for variation in student_id_variations:
+            if variation in df1.columns:
+                student_id_column = variation
+                break
+
+        if student_id_column is None:
+            raise ValueError("No recognized student ID column found in the data")
+
+        class_variations = ['CLASS', 'Class', 'GRADE', 'Grade']
+        # Identify the actual column name from the variations
+        class_column = None
+        for variation in class_variations:
+            if variation in df1.columns:
+                class_column = variation
+                break
+        if class_column is None:
+            raise ValueError("No recognized student ID column found in the data")
+
+        # Standardize column name to 'STUDENT_ID'
+        df = df1.rename(columns={student_id_column: 'STUDENT ID', class_column: 'CLASS'})
+        # Process data
+        grouping_columns = [col for col in df.columns if col not in ['STUDENT ID', 'Gender'] and df[col].notna().any()]
+        grouped = df.groupby(grouping_columns).agg(student_count=('STUDENT ID', 'nunique')).reset_index()
+
+        if 'CLASS' in grouped.columns and grouped['CLASS'].astype(str).str.contains('\D').any():
+            grouped['CLASS'] = grouped['CLASS'].astype(str).str.extract('(\d+)')
+
+        result = grouped.to_dict(orient='records')
+
+        # KPI Cards
+        st.subheader("Your Summary")
+
+        # Calculating KPIs
+        num_students = len(df['STUDENT ID'].unique())
+        num_schools = df['School Name'].nunique() if 'School Name' in df.columns else 0
+        num_blocks = df['Block Name'].nunique() if 'Block Name' in df.columns else 0
+        num_districts = df['District Name'].nunique() if 'District Name' in df.columns else 0
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Number of Students", num_students)
+        with col2:
+            st.metric("Number of Schools", num_schools)
+        with col3:
+            st.metric("Number of Blocks", num_blocks)
+        with col4:
+            st.metric("Number of Districts", num_districts)
         
         # Download button for full data with Custom_IDs and Student_IDs
         #st.markdown(download_link(expanded_data, "full_data.xlsx", "Download Full Data (with Custom_IDs and Student_IDs)"), unsafe_allow_html=True)
@@ -461,61 +513,6 @@ def main():
         # excel_data = st.session_state['mapped_data'].getvalue()
 
         # df1 = pd.read_excel(excel_data)
-        df1 = mapped_data
-        # Define possible variations of 'Student ID' column names
-        student_id_variations = ['STUDENT ID', 'STUDENT_ID', 'ROLL_NUMBER', 'Roll_Number', 'Roll Number']
-
-        # Identify the actual column name from the variations
-        student_id_column = None
-        for variation in student_id_variations:
-            if variation in df1.columns:
-                student_id_column = variation
-                break
-
-        if student_id_column is None:
-            raise ValueError("No recognized student ID column found in the data")
-
-        class_variations = ['CLASS', 'Class', 'GRADE', 'Grade']
-
-        # Identify the actual column name from the variations
-        class_column = None
-        for variation in class_variations:
-            if variation in df1.columns:
-                class_column = variation
-                break
-        if class_column is None:
-            raise ValueError("No recognized student ID column found in the data")
-
-        # Standardize column name to 'STUDENT_ID'
-        df = df1.rename(columns={student_id_column: 'STUDENT ID', class_column: 'CLASS'})
-
-        # Process data
-        grouping_columns = [col for col in df.columns if col not in ['STUDENT ID', 'Gender'] and df[col].notna().any()]
-        grouped = df.groupby(grouping_columns).agg(student_count=('STUDENT ID', 'nunique')).reset_index()
-
-        if 'CLASS' in grouped.columns and grouped['CLASS'].astype(str).str.contains('\D').any():
-            grouped['CLASS'] = grouped['CLASS'].astype(str).str.extract('(\d+)')
-
-        result = grouped.to_dict(orient='records')
-
-        # KPI Cards
-        st.subheader("Your Summary")
-        
-        # Calculating KPIs
-        num_students = len(df['STUDENT ID'].unique())
-        num_schools = df['School Name'].nunique() if 'School Name' in df.columns else 0
-        num_blocks = df['Block Name'].nunique() if 'Block Name' in df.columns else 0
-        num_districts = df['District Name'].nunique() if 'District Name' in df.columns else 0
-
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Number of Students", num_students)
-        with col2:
-            st.metric("Number of Schools", num_schools)
-        with col3:
-            st.metric("Number of Blocks", num_blocks)
-        with col4:
-            st.metric("Number of Districts", num_districts)
 
         # Number of columns and column names for the table
         column_names = ['S.NO', 'STUDENT ID', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SESSION', 'SUBJECT 1', 'SUBJECT 2']
