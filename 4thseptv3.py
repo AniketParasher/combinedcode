@@ -12,6 +12,7 @@ import streamlit_pdf_viewer as pdf_viewer
 from streamlit_folium import st_folium
 import folium
 import plotly.express as px
+import streamlit.components.v1 as components
 
 # Define the parameter descriptions
 parameter_descriptions = {
@@ -659,12 +660,12 @@ def main():
                         preview_pdf_path = pdf_path
 
                 st.header("PDF Preview")
-                # Embed the first PDF in an iframe for preview
+                
                 if preview_pdf_path:
                     with open(preview_pdf_path, "rb") as pdf_file:
                         base64_pdf = base64.b64encode(pdf_file.read()).decode('utf-8')
                         pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="900" type="application/pdf"></iframe>'
-                        st.markdown(pdf_display, unsafe_allow_html=True)
+                        components.html(pdf_display, height=900, width=700)
 
                 # Create a zip file containing all district folders
                 zip_buffer = io.BytesIO()
