@@ -622,12 +622,12 @@ def main():
 
         selected_option = st.selectbox("Choose your file naming format", list(naming_options.keys()))
         filename_template = naming_options[selected_option]
-
+        
         if st.button("Click to Generate PDFs and Zip"):
             with tempfile.TemporaryDirectory() as tmp_dir:
                 pdf_paths = []
                 preview_pdf_path = None  # To store the path of the first PDF
-
+        
                 # Create folders for districts
                 district_folders = {}
                 for record in result:
@@ -636,29 +636,33 @@ def main():
                         district_folder = os.path.join(tmp_dir, district_name)
                         os.makedirs(district_folder, exist_ok=True)
                         district_folders[district_name] = district_folder
-
+        
+                st.write("District folders created:", district_folders)
+        
                 for index, record in enumerate(result):
                     school_name = record.get('School Name', 'default_school')
                     district_name = record.get('District Name', 'default_district')
                     block_name = record.get('Block Name', 'default_block')
                     grade = record.get('CLASS', 'default_grade')
-
+        
                     file_name = filename_template.format(school_name=school_name, district_name=district_name, block_name=block_name, grade=grade)
-
+        
                     pdf = FPDF(orientation='P', unit='mm', format='A4')
                     pdf.set_left_margin(18)
                     pdf.set_right_margin(18)
-
+        
                     create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
-
+        
                     # Save the PDF in the appropriate district folder
                     pdf_path = os.path.join(district_folders[district_name], f'{file_name}.pdf')
                     pdf.output(pdf_path)
                     pdf_paths.append(pdf_path)
-
+        
+                    st.write("Saving PDF to:", pdf_path)
+        
                     if index == 0:  # Save the first PDF for preview
                         preview_pdf_path = pdf_path
-                
+        
                 st.header("PDF Preview")
                 # Embed the first PDF in an iframe for preview
                 if preview_pdf_path:
@@ -666,16 +670,21 @@ def main():
                         base64_pdf = base64.b64encode(pdf_file.read()).decode('utf-8')
                         pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="900" type="application/pdf"></iframe>'
                         st.markdown(pdf_display, unsafe_allow_html=True)
-
+        
                 # Create a zip file containing all district folders
                 zip_buffer = io.BytesIO()
-                with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                     for district_name, folder_path in district_folders.items():
                         for foldername, _, filenames in os.walk(folder_path):
                             for filename in filenames:
                                 filepath = os.path.join(foldername, filename)
-                                zip_file.write(filepath, os.path.relpath(filepath, tmp_dir))
-
+                                # Preserve directory structure in ZIP file
+                                arcname = os.path.relpath(filepath, tmp_dir)
+                                zip_file.write(filepath, arcname)
+                                st.write("Adding to zip:", filepath)
+        
+                zip_buffer.seek(0)  # Reset buffer position
+        
                 # Provide download link for the zip file
                 st.download_button(
                     label="Click to Download Zip File",
