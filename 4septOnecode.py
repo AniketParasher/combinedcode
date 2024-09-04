@@ -251,17 +251,7 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
         pdf.ln(table_cell_height)
 
 
-def main():
-    # If the thank you message has already been displayed, show only the thank you message
-    if st.session_state['thank_you_displayed']:
-        st.markdown("<h2 style='text-align: center; color: green;'>Thank You for using the Attendance Sheet Generator!</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; font-size: 18px;'>We hope the generated PDFs meet your expectations.</p>", unsafe_allow_html=True)
-        st.markdown("<h3 style='text-align: center;'>We'd love to hear your feedback!</h3>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center;'>Please fill out our <a href='https://forms.gle/jpeC9xmtzSBqSQhL9' target='_blank'>feedback form</a>.</p>", unsafe_allow_html=True)
-        return
-        
-    # Centered title
-    st.markdown("<h1 style='text-align: center;'>Tool for ID Generation</h1>", unsafe_allow_html=True)
+def main():        
     
     # Initialize session state
     if 'buttons_initialized' not in st.session_state:
@@ -271,6 +261,17 @@ def main():
         st.session_state['checkboxes_checked'] = False
         st.session_state['thank_you_displayed'] = False  # Initialize thank you state
 
+        # Centered title
+    st.markdown("<h1 style='text-align: center;'>Tool for ID Generation</h1>", unsafe_allow_html=True)
+
+    # If the thank you message has already been displayed, show only the thank you message
+    if st.session_state['thank_you_displayed']:
+        st.markdown("<h2 style='text-align: center; color: green;'>Thank You for using the Attendance Sheet Generator!</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-size: 18px;'>We hope the generated PDFs meet your expectations.</p>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center;'>We'd love to hear your feedback!</h3>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center;'>Please fill out our <a href='https://forms.gle/jpeC9xmtzSBqSQhL9' target='_blank'>feedback form</a>.</p>", unsafe_allow_html=True)
+        return
+        
     # Data for the example table
     data = {
         'District': ['District A'],
