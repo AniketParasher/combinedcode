@@ -679,7 +679,6 @@ def main():
                                 # Preserve directory structure in ZIP file
                                 arcname = os.path.relpath(filepath, tmp_dir)
                                 zip_file.write(filepath, arcname)
-                                st.write("Adding to zip:", filepath)
         
                 zip_buffer.seek(0)  # Reset buffer position
         
