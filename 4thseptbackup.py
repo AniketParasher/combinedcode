@@ -681,7 +681,7 @@ def main():
                 zip_buffer.seek(0)  # Reset buffer position
         
                 # Provide download link for the zip file
-                st.download_button(
+                zip_downloaded = st.download_button(
                     label="Click to Download Zip File",
                     data=zip_buffer.getvalue(),
                     file_name="attendance_Sheets.zip",
