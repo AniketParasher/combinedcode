@@ -632,37 +632,40 @@ def main():
                         os.makedirs(district_folder, exist_ok=True)
                         district_folders[district_name] = district_folder
         
+                # Generate PDFs for each record
                 for index, record in enumerate(result):
                     school_name = record.get('School Name', 'default_school')
                     district_name = record.get('District Name', 'default_district')
                     block_name = record.get('Block Name', 'default_block')
                     grade = record.get('CLASS', 'default_grade')
-        
+                
                     file_name = filename_template.format(school_name=school_name, district_name=district_name, block_name=block_name, grade=grade)
-        
+                
                     pdf = FPDF(orientation='P', unit='mm', format='A4')
                     pdf.set_left_margin(18)
                     pdf.set_right_margin(18)
-        
+                
+                    # Assuming create_attendance_pdf is a function you defined
                     create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
-        
+                
                     # Save the PDF in the appropriate district folder
                     pdf_path = os.path.join(district_folders[district_name], f'{file_name}.pdf')
                     pdf.output(pdf_path)
                     pdf_paths.append(pdf_path)
-        
-                    if index == 0:  # Save the first PDF for preview
+                
+                    # Save the first PDF for preview
+                    if index == 0:
                         preview_pdf_path = pdf_path
                 
+                # Provide download link for the first PDF
                 if preview_pdf_path:
                     with open(preview_pdf_path, "rb") as pdf_file:
-                        base64_pdf = base64.b64encode(pdf_file.read()).decode('utf-8')
-                        
-                        # Create a download link
-                        pdf_display = f'<a href="data:application/pdf;base64,{base64_pdf}" target="_blank">Click here to view PDF</a>'
-                        
-                        # Display the link in Streamlit
-                        st.markdown(pdf_display, unsafe_allow_html=True)
+                        st.download_button(
+                            label="Click here to download and view PDF",
+                            data=pdf_file,
+                            file_name=os.path.basename(preview_pdf_path),
+                            mime="application/pdf"
+                        )
         
                 # Create a zip file containing all district folders
                 zip_buffer = io.BytesIO()
