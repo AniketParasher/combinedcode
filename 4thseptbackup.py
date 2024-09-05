@@ -266,9 +266,9 @@ def main():
         st.session_state['generate_clicked'] = False
         st.session_state['download_data'] = None
         st.session_state['checkboxes_checked'] = False
-        st.session_state['thank_you_displayed'] = False
         st.session_state['pdf_downloaded'] = False
-        st.session_state['zip_downloaded'] = False  # Initialize thank you state
+        st.session_state['zip_downloaded'] = False
+        st.session_state['thank_you_displayed'] = False # Initialize thank you state
 
     if st.session_state['thank_you_displayed']:
         st.markdown("""
@@ -659,8 +659,8 @@ def main():
                     if index == 0:
                         preview_pdf_path = pdf_path
                 
-                # Provide download link for the first PDF
-                if preview_pdf_path:
+                # Step 1: Provide download link for the first PDF
+                if preview_pdf_path and not st.session_state['pdf_downloaded']:
                     with open(preview_pdf_path, "rb") as pdf_file:
                         st.session_state['pdf_downloaded'] = st.download_button(
                             label="Click here to download and view PDF",
@@ -669,7 +669,7 @@ def main():
                             mime="application/pdf"
                         )
                 
-                # Create a zip file containing all district folders
+                # Step 2: Create a zip file containing all district folders
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                     for district_name, folder_path in district_folders.items():
@@ -682,8 +682,8 @@ def main():
                 
                 zip_buffer.seek(0)  # Reset buffer position
                 
-                # Provide download link for the zip file
-                if not st.session_state['thank_you_displayed']:
+                # Step 3: Provide download link for the zip file if the PDF has been downloaded
+                if st.session_state['pdf_downloaded'] and not st.session_state['thank_you_displayed']:
                     st.session_state['zip_downloaded'] = st.download_button(
                         label="Click to Download Zip File",
                         data=zip_buffer.getvalue(),
@@ -691,11 +691,11 @@ def main():
                         mime="application/zip"
                     )
                 
-                # Display the "Thank You!" message only after the ZIP file download
+                # Step 4: Display "Thank You!" message only after the ZIP file download
                 if st.session_state['zip_downloaded']:
                     st.session_state['thank_you_displayed'] = True
                 
-                # Conditionally show the "Thank You" message
+                # Step 5: Conditionally show the "Thank You" message
                 if st.session_state['thank_you_displayed']:
                     st.markdown("# Thank You!")
 
