@@ -653,18 +653,19 @@ def main():
         
                     if index == 0:  # Save the first PDF for preview
                         preview_pdf_path = pdf_path
-        
-                # Provide a download link for the first PDF for preview instead of embedding it
+
+                # Provide a download link for the first PDF file
                 st.header("PDF Preview")
                 if preview_pdf_path:
+                    # Read the PDF file as binary
                     with open(preview_pdf_path, "rb") as pdf_file:
-                        # Create a direct download button for the first PDF file
-                        st.download_button(
-                            label="Click here to download and view PDF",
-                            data=pdf_file,
-                            file_name=os.path.basename(preview_pdf_path),
-                            mime="application/pdf"
-                        )
+                        pdf_data = pdf_file.read()
+                        base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
+                        # Create a download link for the PDF
+                        pdf_link = f'<a href="data:application/pdf;base64,{base64_pdf}" download="{os.path.basename(preview_pdf_path)}">Click here to download and view PDF</a>'
+                        
+                        # Display the link in Streamlit
+                        st.markdown(pdf_link, unsafe_allow_html=True)
         
                 # Create a zip file containing all district folders
                 zip_buffer = io.BytesIO()
