@@ -657,7 +657,7 @@ def main():
                 # Custom smaller header for PDF Preview
                 st.markdown(
                     """
-                    <h3 style='text-align: center; font-size:24px; color:#4CAF50;'>PDF Preview</h3>
+                    <h3 style='text-align: left; font-size:24px; color:#4CAF50;'>PDF Preview</h3>
                     """, 
                     unsafe_allow_html=True
                 )
