@@ -654,8 +654,13 @@ def main():
                     if index == 0:  # Save the first PDF for preview
                         preview_pdf_path = pdf_path
 
-                # Provide a download link for the first PDF file
-                st.header("PDF Preview")
+                # Custom smaller header for PDF Preview
+                st.markdown(
+                    """
+                    <h3 style='text-align: center; font-size:24px; color:#4CAF50;'>PDF Preview</h3>
+                    """, 
+                    unsafe_allow_html=True
+                )
                 if preview_pdf_path:
                     # Read the PDF file as binary
                     with open(preview_pdf_path, "rb") as pdf_file:
