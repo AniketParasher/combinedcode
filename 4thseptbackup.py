@@ -266,6 +266,7 @@ def main():
         st.session_state['generate_clicked'] = False
         st.session_state['download_data'] = None
         st.session_state['checkboxes_checked'] = False
+        st.session_state['pdf_downloaded'] = False
         st.session_state['thank_you_displayed'] = False  # Initialize thank you state
 
     if st.session_state['thank_you_displayed']:
@@ -660,13 +661,13 @@ def main():
                 # Provide download link for the first PDF
                 if preview_pdf_path:
                     with open(preview_pdf_path, "rb") as pdf_file:
-                        st.download_button(
+                        st.session_state['pdf_downloaded'] = st.download_button(
                             label="Click here to download and view PDF",
                             data=pdf_file,
                             file_name=os.path.basename(preview_pdf_path),
                             mime="application/pdf"
                         )
-        
+                
                 # Create a zip file containing all district folders
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
@@ -675,11 +676,11 @@ def main():
                             for filename in filenames:
                                 filepath = os.path.join(foldername, filename)
                                 # Preserve directory structure in ZIP file
-                                arcname = os.path.relpath(filepath, tmp_dir)
+                                arcname = os.path.relpath(filepath, folder_path)
                                 zip_file.write(filepath, arcname)
-        
+                
                 zip_buffer.seek(0)  # Reset buffer position
-        
+                
                 # Provide download link for the zip file
                 zip_downloaded = st.download_button(
                     label="Click to Download Zip File",
@@ -687,8 +688,14 @@ def main():
                     file_name="attendance_Sheets.zip",
                     mime="application/zip"
                 )
+                
+                # Display the "Thank You!" message after ZIP download
                 if zip_downloaded:
-                    st.session_state['thank_you_displayed'] = True  # Set the thank you message state
+                    st.session_state['thank_you_displayed'] = True
+                
+                # Conditionally show the "Thank You" message
+                if st.session_state['thank_you_displayed']:
+                    st.markdown("# Thank You!")
 
 if __name__ == "__main__":
     main()
