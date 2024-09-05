@@ -266,9 +266,7 @@ def main():
         st.session_state['generate_clicked'] = False
         st.session_state['download_data'] = None
         st.session_state['checkboxes_checked'] = False
-        st.session_state['pdf_downloaded'] = False
-        st.session_state['zip_downloaded'] = False
-        st.session_state['thank_you_displayed'] = False # Initialize thank you state
+        st.session_state['thank_you_displayed'] = False  # Initialize thank you state
 
     if st.session_state['thank_you_displayed']:
         st.markdown("""
@@ -369,7 +367,7 @@ def main():
     
     # Display the text and table
     st.markdown(css, unsafe_allow_html=True)
-    st.warning("""Please rename your column headers as per input file structure shown""")
+    st.markdown("<p style='font-size: small;'>Please rename your column headers as per input file structure shown:</p>", unsafe_allow_html=True)
     st.markdown(html_table, unsafe_allow_html=True)
     
     st.info(
@@ -634,42 +632,41 @@ def main():
                         os.makedirs(district_folder, exist_ok=True)
                         district_folders[district_name] = district_folder
         
-                # Generate PDFs for each record
                 for index, record in enumerate(result):
                     school_name = record.get('School Name', 'default_school')
                     district_name = record.get('District Name', 'default_district')
                     block_name = record.get('Block Name', 'default_block')
                     grade = record.get('CLASS', 'default_grade')
-                
+        
                     file_name = filename_template.format(school_name=school_name, district_name=district_name, block_name=block_name, grade=grade)
-                
+        
                     pdf = FPDF(orientation='P', unit='mm', format='A4')
                     pdf.set_left_margin(18)
                     pdf.set_right_margin(18)
-                
-                    # Assuming create_attendance_pdf is a function you defined
+        
                     create_attendance_pdf(pdf, column_widths, column_names, image_path, record, df)
-                
+        
                     # Save the PDF in the appropriate district folder
                     pdf_path = os.path.join(district_folders[district_name], f'{file_name}.pdf')
                     pdf.output(pdf_path)
                     pdf_paths.append(pdf_path)
-                
-                    # Save the first PDF for preview
-                    if index == 0:
+        
+                    if index == 0:  # Save the first PDF for preview
                         preview_pdf_path = pdf_path
-                
-                # Step 1: Provide download link for the first PDF
-                if preview_pdf_path and not st.session_state['pdf_downloaded']:
+        
+                # Provide a download link for the first PDF for preview instead of embedding it
+                st.header("PDF Preview")
+                if preview_pdf_path:
                     with open(preview_pdf_path, "rb") as pdf_file:
-                        st.session_state['pdf_downloaded'] = st.download_button(
+                        # Create a direct download button for the first PDF file
+                        st.download_button(
                             label="Click here to download and view PDF",
                             data=pdf_file,
                             file_name=os.path.basename(preview_pdf_path),
                             mime="application/pdf"
                         )
-                
-                # Step 2: Create a zip file containing all district folders
+        
+                # Create a zip file containing all district folders
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                     for district_name, folder_path in district_folders.items():
@@ -677,27 +674,19 @@ def main():
                             for filename in filenames:
                                 filepath = os.path.join(foldername, filename)
                                 # Preserve directory structure in ZIP file
-                                arcname = os.path.relpath(filepath, folder_path)
+                                arcname = os.path.relpath(filepath, tmp_dir)
                                 zip_file.write(filepath, arcname)
-                
+        
                 zip_buffer.seek(0)  # Reset buffer position
-                
-                # Step 3: Provide download link for the zip file if the PDF has been downloaded
-                if st.session_state['pdf_downloaded'] and not st.session_state['thank_you_displayed']:
-                    st.session_state['zip_downloaded'] = st.download_button(
-                        label="Click to Download Zip File",
-                        data=zip_buffer.getvalue(),
-                        file_name="attendance_Sheets.zip",
-                        mime="application/zip"
-                    )
-                
-                # Step 4: Display "Thank You!" message only after the ZIP file download
-                if st.session_state['zip_downloaded']:
-                    st.session_state['thank_you_displayed'] = True
-                
-                # Step 5: Conditionally show the "Thank You" message
-                if st.session_state['thank_you_displayed']:
-                    st.markdown("# Thank You!")
+        
+                # Provide download link for the zip file
+                st.download_button(
+                    label="Click to Download Zip File",
+                    data=zip_buffer.getvalue(),
+                    file_name="attendance_Sheets.zip",
+                    mime="application/zip"
+                )
+                st.session_state['thank_you_displayed'] = True  # Set the thank you message state
 
 if __name__ == "__main__":
     main()
