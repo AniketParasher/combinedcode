@@ -687,7 +687,8 @@ def main():
                     file_name="attendance_Sheets.zip",
                     mime="application/zip"
                 )
-                st.session_state['thank_you_displayed'] = True  # Set the thank you message state
+                if zip_downloaded:
+                    st.session_state['thank_you_displayed'] = True  # Set the thank you message state
 
 if __name__ == "__main__":
     main()
