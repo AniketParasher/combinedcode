@@ -653,13 +653,15 @@ def main():
         
                     if index == 0:  # Save the first PDF for preview
                         preview_pdf_path = pdf_path
-        
-                st.header("PDF Preview")
-                # Embed the first PDF in an iframe for preview
+                
                 if preview_pdf_path:
                     with open(preview_pdf_path, "rb") as pdf_file:
                         base64_pdf = base64.b64encode(pdf_file.read()).decode('utf-8')
-                        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="900" type="application/pdf"></iframe>'
+                        
+                        # Create a download link
+                        pdf_display = f'<a href="data:application/pdf;base64,{base64_pdf}" target="_blank">Click here to view PDF</a>'
+                        
+                        # Display the link in Streamlit
                         st.markdown(pdf_display, unsafe_allow_html=True)
         
                 # Create a zip file containing all district folders
