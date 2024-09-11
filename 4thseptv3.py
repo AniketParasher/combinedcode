@@ -552,7 +552,7 @@ def main():
 
         # Calculating KPIs
         num_students = len(df['STUDENT ID'].unique())
-        num_schools = df['School Name'].nunique() if 'School Name' in df.columns else 0
+        num_schools = df['School Code'].nunique() if 'School Name' in df.columns else 0
         num_blocks = df['Block Name'].nunique() if 'Block Name' in df.columns else 0
         num_districts = df['District Name'].nunique() if 'District Name' in df.columns else 0
         col1, col2, col3, col4 = st.columns(4)
