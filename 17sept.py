@@ -1,5 +1,4 @@
 import streamlit as st
-import logging
 import pandas as pd
 import numpy as np
 import zipfile
@@ -65,14 +64,10 @@ def process_data(uploaded_file, partner_id, buffer_percent, grade, district_digi
     # Assign the Partner_ID directly
     unique_school_count = data['School_ID'].nunique()
     digit_count = len(str(unique_school_count))
-    # Set up logging configuration (if not already configured)
-    logging.basicConfig(level=logging.INFO)
-    
     if school_digits >= digit_count:
         digit_count = school_digits
     else:
-        # Log the note instead of raising an error
-        logging.info(f"Note: School Digits changed to {digit_count}")
+        # Note: School Digits changed to the new value
         raise ValueError(f"School Digits changed to {digit_count}")
     data['Partner_ID'] = str(partner_id).zfill(len(str(partner_id)))  # Padding Partner_ID
     data['Grade'] = grade
