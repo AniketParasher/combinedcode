@@ -67,7 +67,7 @@ def process_data(uploaded_file, partner_id, buffer_percent, grade, district_digi
     if school_digits >= digit_count:
         digit_count = school_digits
     else:
-        raise ValueError("School Digits changed to length of count of schools")
+        raise ValueError(f"School Digits changed to {digit_count}")
     data['Partner_ID'] = str(partner_id).zfill(len(str(partner_id)))  # Padding Partner_ID
     data['Grade'] = grade
     # Assign unique IDs for District, Block, and School, default to "00" for missing values
