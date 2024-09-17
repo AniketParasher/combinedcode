@@ -64,6 +64,8 @@ def process_data(uploaded_file, partner_id, buffer_percent, grade, district_digi
     # Assign the Partner_ID directly
     unique_school_count = data['School_ID'].nunique()
     digit_count = len(str(unique_school_count))
+    if school_digits > digit_count:
+        digit_count = school_digits
     data['Partner_ID'] = str(partner_id).zfill(len(str(partner_id)))  # Padding Partner_ID
     data['Grade'] = grade
     # Assign unique IDs for District, Block, and School, default to "00" for missing values
