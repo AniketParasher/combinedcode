@@ -383,6 +383,7 @@ def main():
         
         - School_ID column should be unique
         - Please upload an XLSX file that is less than 200MB in size.
+        - School digits should be based on number of schools example 100 = 3 digits
         """
     )
     
@@ -442,7 +443,6 @@ def main():
                 """,
                 unsafe_allow_html=True
             )
-            st.markdown("<p style='color: red;'>School digits should be based on number of schools</p>", unsafe_allow_html=True)
             selected_description = st.selectbox("", parameter_options)
             
             # Get the corresponding parameter key
