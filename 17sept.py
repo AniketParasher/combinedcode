@@ -383,7 +383,7 @@ def main():
         
         - School_ID column should be unique
         - Please upload an XLSX file that is less than 200MB in size.
-        - School digits should be based on number of schools example 100 = 3 digits
+        - School digits should be based on number of schools example 100 schools = 3 digits
         """
     )
     
