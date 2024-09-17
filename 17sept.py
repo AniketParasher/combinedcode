@@ -426,7 +426,6 @@ def main():
             district_digits = st.number_input("District ID Digits", min_value=1, value=2)
             block_digits = st.number_input("Block ID Digits", min_value=1, value=2)
             school_digits = st.number_input("School ID Digits", min_value=1, value=3)
-            st.markdown("<p style='color: red;'>School digits should be based on number of schools</p>", unsafe_allow_html=True)
             student_digits = st.number_input("Student ID Digits", min_value=1, value=4)
             
             # Display parameter descriptions directly in selectbox
@@ -443,6 +442,7 @@ def main():
                 """,
                 unsafe_allow_html=True
             )
+            st.markdown("<p style='color: red;'>School digits should be based on number of schools</p>", unsafe_allow_html=True)
             selected_description = st.selectbox("", parameter_options)
             
             # Get the corresponding parameter key
