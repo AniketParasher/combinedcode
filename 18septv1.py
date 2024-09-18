@@ -448,6 +448,8 @@ def main():
                 
             # Message in blue color above District ID Digits
             st.markdown("<p style='color: blue;'>Please provide required Digits</p>", unsafe_allow_html=True)
+            # Warning box in yellow color
+            st.error( """Note : Selection below minimum required value not allowed""" )
             district_digits = st.number_input("District ID Digits", min_value=district_digit_count, value=2)
             block_digits = st.number_input("Block ID Digits", min_value=block_digit_count, value=2)
             school_digits = st.number_input("School ID Digits", min_value=school_digit_count, value=5)
@@ -495,11 +497,6 @@ def main():
 
             school_format = 'X' * school_digits # replace with above var
             st.markdown(f"<p style='font-size: small;'>Your School Code format would be: {school_format}</p>", unsafe_allow_html=True)
-
-            # Warning box in yellow color
-            st.error( """Note: Avoid Digit Overload in your Enrolments"""
-            )
-
         
         # Generate button action
         if st.session_state['checkboxes_checked']:
