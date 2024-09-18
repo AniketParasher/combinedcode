@@ -449,7 +449,7 @@ def main():
             # Message in blue color above District ID Digits
             st.markdown("<p style='color: blue;'>Please provide required Digits</p>", unsafe_allow_html=True)
             # Warning box in yellow color
-            st.error( """Note : Selection below minimum required value not allowed""" )
+            st.markdown("<p style='text-align: center; color: red;'>Selection below minimum required value not allowed</p>", unsafe_allow_html=True)
             district_digits = st.number_input("District ID Digits", min_value=district_digit_count, value=2)
             block_digits = st.number_input("Block ID Digits", min_value=block_digit_count, value=2)
             school_digits = st.number_input("School ID Digits", min_value=school_digit_count, value=5)
