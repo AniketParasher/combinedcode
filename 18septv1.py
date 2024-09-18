@@ -451,7 +451,7 @@ def main():
                 """
                 <p style='color: blue;'>
                     Please provide required Digits 
-                    <span style='color: red;'>Selection below minimum required value not allowed</span>
+                    <span style='color: red;'>(Selection below minimum required value not allowed)</span>
                 </p>
                 """, 
                 unsafe_allow_html=True
