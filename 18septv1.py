@@ -436,7 +436,7 @@ def main():
             buffer_percent = 0.0
             district_digits = 2
             block_digits = 2
-            school_digits = 4
+            school_digits = school_digit_count
             student_digits = 3
             selected_param = 'A4'  # Default parameter
         elif customize_id:
