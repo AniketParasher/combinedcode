@@ -223,40 +223,80 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
     table_cell_height = 9
 
     # Add the Title and Subtitle in the Center
+    if format_option == 'Pen Paper Format':
+        # Add the Title and Subtitle for pen paper format
+        pdf.cell(6, 4, '', border='LTR', align='C')
+        pdf.cell(16, 4, '', border='LTR', align='C')
+        pdf.cell(73, 4, '', border='LTR', align='C')
+        pdf.cell(12, 4, '', border='LTR', align='C')
+        pdf.cell(20, 4, '', border='LTR', align='C')
+        pdf.cell(20, 4, '', border='LTR', align='C')
+        pdf.cell(20, 4, '', border='LTR', align='C')
+        pdf.cell(12, 4, '', border='LTR', align='C')  # End of the row
 
-    pdf.cell(6, 4,'', border='LTR', align='C')
-    pdf.cell(15,4,'', border='LTR', align='C')
-    pdf.cell(62,4, '', border='LTR', align='C')
-    pdf.cell(12,4, '', border='LTR', align='C')
-    pdf.cell(24,4, '', border='LTR', align='C')
-    pdf.cell(24,4, '', border='LTR', align='C')
-    pdf.cell(24,4, '', border='LTR', align='C')
-    pdf.cell(12,4, '', border='LTR', align='C')  # End of the row
+        pdf.ln(4)
+        # First row of headers
+        pdf.cell(6, 0.5, 'S.NO', border='LR', align='C')
+        pdf.cell(16, 0.5, 'STUDENT ID', border='LR', align='C')
+        pdf.cell(73, 0.5, 'STUDENT NAME', border='LR', align='C')
+        pdf.cell(12, 0.5, 'GENDER', border='LR', align='C')
+        pdf.cell(20, 0.5, 'SUBJECT 1', border='LR', align='C')
+        pdf.cell(20, 0.5, 'SUBJECT 2', border='LR', align='C')
+        pdf.cell(20, 0.5, 'SUBJECT 3', border='LR', align='C')
+        pdf.cell(12, 0.5, 'SESSION', border='LR', align='C')  # End of the row
 
-    pdf.ln(4)
-    # First row of headers
-    pdf.cell(6, 0.5, 'S.NO', border='LR', align='C')
-    pdf.cell(15,0.5, 'STUDENT ID', border='LR', align='C')
-    pdf.cell(62,0.5, 'STUDENT NAME', border='LR', align='C')
-    pdf.cell(12,0.5, 'GENDER', border='LR', align='C')
-    pdf.cell(24,0.5, 'SUBJECT 1', border='LR', align='C')
-    pdf.cell(24,0.5, 'SUBJECT 2', border='LR', align='C')
-    pdf.cell(24,0.5, 'SUBJECT 3', border='LR', align='C')
-    pdf.cell(12,0.5, 'SESSION', border='LR', align='C')  # End of the row
+        # Move to the next line
+        pdf.ln(0.5)
 
-    # Move to the next line
-    pdf.ln(0.5)
+        # Second row of headers (merged cells)
+        pdf.set_font("Arial", 'B', size=5)
+        pdf.cell(6, 4.5, '', border='LBR', align='C')  # Empty cell under S.NO
+        pdf.cell(16, 4.5, '', border='LBR', align='C')  # Empty cell under STUDENT ID
+        pdf.cell(73, 4.5, '', border='LBR', align='C')  # Empty cell under STUDENT NAME
+        pdf.cell(12, 4.5, '', border='LBR', align='C')  # Empty cell under GENDER
+        pdf.cell(20, 4.5, 'Present/Absent', border='LBR', align='C')  # Empty cell under SUBJECT 1
+        pdf.cell(20, 4.5, 'Present/Absent', border='LBR', align='C')  # Empty cell under SUBJECT 2
+        pdf.cell(20, 4.5, 'Present/Absent', border='LBR', align='C')  # Empty cell under SUBJECT 3
+        pdf.cell(12, 4.5, '', border='LBR', align='C')  # Empty cell under SESSION
 
-    # Second row of headers (merged cells)
-    pdf.set_font("Arial", 'B', size=5)
-    pdf.cell(6, 4.5, '', border='LBR', align='C')  # Empty cell under S.NO
-    pdf.cell(15, 4.5, '', border='LBR', align='C')  # Empty cell under STUDENT ID
-    pdf.cell(62, 4.5, '', border='LBR', align='C')  # Empty cell under STUDENT NAME
-    pdf.cell(12, 4.5, '', border='LBR', align='C')  # Empty cell under GENDER
-    pdf.cell(24, 4.5, 'Present/Absent', border='LBR', align='C')  # Empty cell under TAB ID
-    pdf.cell(24, 4.5, 'Present/Absent', border='LBR', align='C')  # SESSION description
-    pdf.cell(24, 4.5, 'Present/Absent', border='LBR', align='C')  # SUBJECT 1 details
-    pdf.cell(12, 4.5, '', border='LBR', align='C')  # SUBJECT 2 details
+    elif format_option == 'Digital':
+        # Add the Title and Subtitle for digital format
+        pdf.cell(6, 4, '', border='LTR', align='C')
+        pdf.cell(15, 4, '', border='LTR', align='C')
+        pdf.cell(64, 4, '', border='LTR', align='C')
+        pdf.cell(12, 4, '', border='LTR', align='C')
+        pdf.cell(10, 4, '', border='LTR', align='C')
+        pdf.cell(20, 4, '', border='LTR', align='C')
+        pdf.cell(20, 4, '', border='LTR', align='C')
+        pdf.cell(12, 4, '', border='LTR', align='C')
+        pdf.cell(12, 4, '', border='LTR', align='C')  # End of the row
+
+        pdf.ln(4)
+        # First row of headers
+        pdf.cell(6, 0.5, 'S.NO', border='LR', align='C')
+        pdf.cell(15, 0.5, 'STUDENT ID', border='LR', align='C')
+        pdf.cell(64, 0.5, 'STUDENT NAME', border='LR', align='C')
+        pdf.cell(12, 0.5, 'GENDER', border='LR', align='C')
+        pdf.cell(10, 0.5, 'TAB ID', border='LR', align='C')
+        pdf.cell(20, 0.5, 'SUBJECT 1', border='LR', align='C')
+        pdf.cell(20, 0.5, 'SUBJECT 2', border='LR', align='C')
+        pdf.cell(12, 0.5, 'SECTION', border='LR', align='C')
+        pdf.cell(12, 0.5, 'SESSION', border='LR', align='C')  # End of the row
+
+        # Move to the next line
+        pdf.ln(0.5)
+
+        # Second row of headers (merged cells)
+        pdf.set_font("Arial", 'B', size=5)
+        pdf.cell(6, 4.5, '', border='LBR', align='C')  # Empty cell under S.NO
+        pdf.cell(15, 4.5, '', border='LBR', align='C')  # Empty cell under STUDENT ID
+        pdf.cell(64, 4.5, '', border='LBR', align='C')  # Empty cell under STUDENT NAME
+        pdf.cell(12, 4.5, '', border='LBR', align='C')  # Empty cell under GENDER
+        pdf.cell(10, 4.5, '', border='LBR', align='C')  # Empty cell under TAB ID
+        pdf.cell(20, 4.5, 'Present/Absent', border='LBR', align='C')  # Empty cell under SUBJECT 1
+        pdf.cell(20, 4.5, 'Present/Absent', border='LBR', align='C')  # Empty cell under SUBJECT 2
+        pdf.cell(12, 4.5, '', border='LBR', align='C')  # Empty cell under SECTION
+        pdf.cell(12, 4.5, '', border='LBR', align='C')  # Empty cell under SESSION
 
     pdf.ln(4.5)
 
@@ -642,18 +682,35 @@ def main():
 
         image_path = "https://raw.githubusercontent.com/AniketParasher/pdfcreator/main/cg.png"
 
-        # Number of columns and column names for the table
-        column_names = ['S.NO', 'STUDENT ID', 'STUDENT NAME', 'GENDER', 'SUBJECT 1', 'SUBJECT 2', 'SUBJECT 3', 'SESSION']
-        column_widths = {
-            'S.NO': 6,
-            'STUDENT ID': 15,
-            'STUDENT NAME': 62,
-            'GENDER': 12,
-            'SUBJECT 1': 24,
-            'SUBJECT 2': 24,
-            'SUBJECT 3': 24,
-            'SESSION' : 12
-        }
+        # Choose between pen paper format or digital
+        format_option = st.radio("Choose the format for the attendance sheet", ('Pen Paper Format', 'Digital'))
+        
+        # Number of columns and column names for the table based on the selected format
+        if format_option == 'Pen Paper Format':
+            column_names = ['S.NO', 'STUDENT ID', 'STUDENT NAME', 'GENDER', 'SUBJECT 1', 'SUBJECT 2', 'SUBJECT 3', 'SESSION']
+            column_widths = {
+                'S.NO': 6,
+                'STUDENT ID': 16,
+                'STUDENT NAME': 73,
+                'GENDER': 12,
+                'SUBJECT 1': 20,
+                'SUBJECT 2': 20,
+                'SUBJECT 3': 20,
+                'SESSION': 12
+            }
+        else:
+            column_names = ['S.NO', 'STUDENT ID', 'STUDENT NAME', 'GENDER', 'TAB ID', 'SUBJECT 1', 'SUBJECT 2', 'SECTION', 'SESSION']
+            column_widths = {
+                'S.NO': 6,
+                'STUDENT ID': 15,
+                'STUDENT NAME': 64,
+                'GENDER': 12,
+                'TAB ID': 10,
+                'SUBJECT 1': 20,
+                'SUBJECT 2': 20,
+                'SECTION': 12,
+                'SESSION': 12
+            }
 
         selected_option = st.selectbox("Choose your file naming format", list(naming_options.keys()))
         filename_template = naming_options[selected_option]
