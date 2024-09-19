@@ -715,7 +715,7 @@ def main():
         selected_option = st.selectbox("Choose your file naming format", list(naming_options.keys()))
         filename_template = naming_options[selected_option]
         
-        if st.button("Click to Generate PDFs and Zip"):
+        if st.button("Click here to Generate PDFs"):
             with tempfile.TemporaryDirectory() as tmp_dir:
                 pdf_paths = []
                 preview_pdf_path = None  # To store the path of the first PDF
@@ -730,9 +730,9 @@ def main():
                         district_folders[district_name] = district_folder
         
                 for index, record in enumerate(result):
-                    school_name = record.get('School Name', 'default_school').replace('/', ' ')
-                    district_name = record.get('District Name', 'default_district').replace('/', ' ')
-                    block_name = record.get('Block Name', 'default_block').replace('/', ' ')
+                    school_name = record.get('School Name', 'default_school').replace('/', '_')
+                    district_name = record.get('District Name', 'default_district').replace('/', '_')
+                    block_name = record.get('Block Name', 'default_block').replace('/', '_')
                     grade = record.get('CLASS', 'default_grade')
         
                     file_name = filename_template.format(school_name=school_name, district_name=district_name, block_name=block_name, grade=grade)
