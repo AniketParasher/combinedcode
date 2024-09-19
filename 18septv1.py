@@ -730,9 +730,9 @@ def main():
                         district_folders[district_name] = district_folder
         
                 for index, record in enumerate(result):
-                    school_name = record.get('School Name', 'default_school')
-                    district_name = record.get('District Name', 'default_district')
-                    block_name = record.get('Block Name', 'default_block')
+                    school_name = record.get('School Name', 'default_school').replace('/', '|')
+                    district_name = record.get('District Name', 'default_district').replace('/', '|')
+                    block_name = record.get('Block Name', 'default_block').replace('/', '|')
                     grade = record.get('CLASS', 'default_grade')
         
                     file_name = filename_template.format(school_name=school_name, district_name=district_name, block_name=block_name, grade=grade)
