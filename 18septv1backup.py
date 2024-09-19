@@ -173,7 +173,7 @@ def create_attendance_pdf(pdf, column_widths, column_names, image_path, info_val
     info_labels = {
         'DISTRICT': '',
         'BLOCK': '',
-        'SCHOOL NAME': '',
+        'SCHOOL': '',
         'CLASS': '',
         'SCHOOL CODE': ''
     }
